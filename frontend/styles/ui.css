@@ -1163,35 +1163,33 @@ body.lunar-active .info-card {
 /* =====================================================
    MOBILE RESPONSIVE FIXES
 ===================================================== */
-/* =====================================================
-   MOBILE RESPONSIVE FIXES
-===================================================== */
-/* =====================================================
-   MOBILE RESPONSIVE FIXES
-===================================================== */
-/* =====================================================
-   MOBILE RESPONSIVE FIXES (CLEANED & FIXED)
-===================================================== */
-/* =====================================================
-   MOBILE RESPONSIVE FIXES (FINAL POLISH)
-===================================================== */
 @media (max-width: 768px) {
 
-    /* --- 1. Top Bar Protection --- */
+    /* --- 1. Top Bar Protection (Fixes Overlap) --- */
     .ui-top {
         top: max(20px, env(safe-area-inset-top) + 12px);
         left: 20px;
-        right: 20px;
-        max-width: none;
+
+        /* CRITICAL FIX: Limit width to avoid hitting the right-side controls */
+        max-width: calc(100vw - 170px);
+
         pointer-events: none;
         display: flex;
         flex-direction: column;
         align-items: flex-start;
+        z-index: 100;
     }
 
     .ui-title {
-        font-size: 16px;
+        font-size: 15px;
+        /* Slightly smaller for safety */
         text-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+
+        /* Truncate text if it gets too long */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
     }
 
     .ui-subtitle,
@@ -1199,15 +1197,18 @@ body.lunar-active .info-card {
         display: none;
     }
 
-    /* --- 2. Controls (Top Right) --- */
+    /* --- 2. Controls (Top Right Pill) --- */
     .ui-controls {
         top: max(20px, env(safe-area-inset-top) + 12px);
-        right: 20px;
+        right: 16px;
+        /* Moved slightly closer to edge to save space */
     }
 
     .control-bar {
-        padding: 3px;
-        transform: scale(0.95);
+        padding: 2px;
+        /* Tighter padding */
+        transform: scale(0.90);
+        /* Shrink visual size slightly */
         transform-origin: right top;
         background: rgba(20, 20, 22, 0.85);
     }
@@ -1218,20 +1219,21 @@ body.lunar-active .info-card {
 
     #reset-view {
         padding: 0;
-        width: 36px;
+        width: 34px;
         justify-content: center;
     }
 
     /* Fix Focus Indicator Position */
     .focus-indicator {
-        top: 90px !important;
+        top: 85px !important;
         transform: translateX(-50%) !important;
-        font-size: 10px;
-        padding: 8px 14px;
+        font-size: 9px;
+        padding: 6px 12px;
         z-index: 90;
+        white-space: nowrap;
     }
 
-    /* --- 3. Layout (Peaking Sheet Effect) --- */
+    /* --- 3. Layout (Peaking Sheet) --- */
     .lunar-layout {
         display: flex;
         flex-direction: column;
@@ -1246,14 +1248,13 @@ body.lunar-active .info-card {
         transition: flex 0.5s cubic-bezier(0.32, 0.72, 0, 1);
     }
 
-    /* THE GLASS SHEET */
+    /* --- 4. The Glass Sheet --- */
     .lunar-cards {
         position: relative;
         width: 100%;
 
-        /* Unified Glass Background */
-        background: rgba(18, 18, 22, 0.40);
-        /* Slightly more visible for contrast */
+        /* Glass Style */
+        background: rgba(18, 18, 22, 0.30);
         backdrop-filter: blur(25px);
         -webkit-backdrop-filter: blur(25px);
 
@@ -1262,7 +1263,6 @@ body.lunar-active .info-card {
         border-top: 1px solid rgba(255, 255, 255, 0.12);
         box-shadow: 0 -10px 50px rgba(0, 0, 0, 0.6);
 
-        /* Peaking State */
         height: auto;
         max-height: 18vh;
         overflow-y: auto;
@@ -1276,22 +1276,15 @@ body.lunar-active .info-card {
         max-height: 65vh;
     }
 
-    /* --- 4. Sheet Header (Seamless Fix) --- */
+    /* --- 5. Sheet Header --- */
     .sheet-header {
         position: relative;
-        /* Changed from sticky to avoid stacking issues */
         top: 0;
         z-index: 10;
         padding-bottom: 12px;
         margin-bottom: 12px;
-
-        /* REMOVED: Background, borders, and negative margins */
         background: transparent;
         border: none;
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
-        box-shadow: none;
-
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -1303,51 +1296,56 @@ body.lunar-active .info-card {
         width: 36px;
         height: 4px;
         background: rgba(255, 255, 255, 0.3);
-        /* Brighter for visibility */
         border-radius: 10px;
     }
 
-    /* --- 5. Navigation Pill (Fixed Center Bottom) --- */
+    /* --- 6. Navigation Pill (Fixed Center Bottom) --- */
     .mode-switch-container {
         position: fixed !important;
         left: 50% !important;
         transform: translateX(-50%) !important;
         bottom: max(24px, env(safe-area-inset-bottom) + 12px) !important;
 
+        /* Logic for narrow screens: don't let it overflow */
         width: auto !important;
-        min-width: 260px;
+        max-width: 90vw;
+        min-width: auto;
+
         z-index: 500 !important;
         display: flex;
         justify-content: center;
         pointer-events: auto;
-        /* Ensure clickable */
     }
 
     .mode-segmented-control {
         background: rgba(30, 30, 35, 0.9);
-        /* Opaque enough to read */
         border: 1px solid rgba(255, 255, 255, 0.15);
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-        padding: 4px;
+        padding: 3px;
+        /* Tighter padding */
         border-radius: 999px;
         backdrop-filter: blur(10px);
+        display: flex;
+        flex-wrap: nowrap;
+        /* Prevent stacking */
     }
 
     .mode-btn {
-        padding: 10px 18px;
-        font-size: 12px;
+        /* Reduce padding for narrow screens */
+        padding: 10px 14px;
+        font-size: 11px;
+        /* Slightly smaller text */
         flex: 1;
         white-space: nowrap;
     }
 
-    /* --- 6. Info Card (Overlay) --- */
+    /* --- 7. Info Card Overlay --- */
     .info-card {
         width: 100%;
         border-radius: 32px 32px 0 0;
         padding: 28px 28px 100px 28px;
         max-height: 80vh;
         z-index: 600;
-        /* Higher than Pill */
         right: 0;
         left: 0;
         bottom: 0;
