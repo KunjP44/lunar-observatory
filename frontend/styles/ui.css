@@ -1,5 +1,5 @@
 /* =====================================================
-    MODERN DESIGN SYSTEM (Apple/Google Inspired)
+    MODERN DESIGN SYSTEM (Apple/Google Inspired)
 ===================================================== */
 *,
 *::before,
@@ -46,10 +46,10 @@ body {
 
 
 /* =====================================================
-    LAYER & INTERACTION CONTROL
+    LAYER & INTERACTION CONTROL
 ===================================================== */
 /* =====================================================
-   INTERACTION LAYERS (FIXED & PREDICTABLE)
+   INTERACTION LAYERS (FIXED & PREDICTABLE)
 ===================================================== */
 
 /* Canvas */
@@ -106,7 +106,7 @@ button,
 }
 
 /* =====================================================
-    GLOBAL UI ELEMENTS
+    GLOBAL UI ELEMENTS
 ===================================================== */
 .ui-top {
     position: fixed;
@@ -336,7 +336,7 @@ button,
 }
 
 /* =====================================================
-    MODE SWITCHER (Bottom Dock)
+    MODE SWITCHER (Bottom Dock)
 ===================================================== */
 .mode-switch-container {
     position: fixed;
@@ -379,7 +379,7 @@ button,
 }
 
 /* =====================================================
-    LUNAR OBSERVATORY LAYOUT
+    LUNAR OBSERVATORY LAYOUT
 ===================================================== */
 .moon-mode {
     position: fixed;
@@ -450,7 +450,7 @@ button,
 
 
 /* =====================================================
-    CARD DESIGN (BENTO GRID STYLE)
+    CARD DESIGN (BENTO GRID STYLE)
 ===================================================== */
 .moon-card {
     background: var(--card-bg);
@@ -745,7 +745,7 @@ body.lunar-active .info-card {
 }
 
 /* =====================================================
-    HERO CARD: DATE NAVIGATOR
+    HERO CARD: DATE NAVIGATOR
 ===================================================== */
 .hero-card {
     background: linear-gradient(145deg, rgba(40, 40, 45, 0.7), rgba(28, 28, 30, 0.7));
@@ -999,7 +999,7 @@ body.lunar-active .info-card {
 
 
 /* ============================
-   INFO CARD CONTENT (JSON DATA)
+   INFO CARD CONTENT (JSON DATA)
 ============================ */
 .info-card .card-title {
     font-size: 18px;
@@ -1101,7 +1101,7 @@ body.lunar-active .info-card {
 }
 
 /* =====================================================
-    BACKGROUND & LOADER
+    BACKGROUND & LOADER
 ===================================================== */
 #env-gradient {
     position: fixed;
@@ -1161,7 +1161,19 @@ body.lunar-active .info-card {
 }
 
 /* =====================================================
-   MOBILE RESPONSIVE FIXES
+   MOBILE RESPONSIVE FIXES
+===================================================== */
+/* =====================================================
+   MOBILE RESPONSIVE FIXES
+===================================================== */
+/* =====================================================
+   MOBILE RESPONSIVE FIXES
+===================================================== */
+/* =====================================================
+   MOBILE RESPONSIVE FIXES (CLEANED & FIXED)
+===================================================== */
+/* =====================================================
+   MOBILE RESPONSIVE FIXES (FINAL POLISH)
 ===================================================== */
 @media (max-width: 768px) {
 
@@ -1210,7 +1222,7 @@ body.lunar-active .info-card {
         justify-content: center;
     }
 
-    /* Fix Focus Indicator Position (Below Header) */
+    /* Fix Focus Indicator Position */
     .focus-indicator {
         top: 90px !important;
         transform: translateX(-50%) !important;
@@ -1229,74 +1241,70 @@ body.lunar-active .info-card {
 
     .lunar-visual {
         flex: 1;
-        /* Takes all available space */
         width: 100%;
         min-height: 30vh;
-        /* Allow it to shrink when cards expand */
         transition: flex 0.5s cubic-bezier(0.32, 0.72, 0, 1);
     }
 
+    /* THE GLASS SHEET */
     .lunar-cards {
         position: relative;
         width: 100%;
 
-        /* Transparent Glass Background */
-        background: rgba(18, 18, 22, 0.30);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
+        /* Unified Glass Background */
+        background: rgba(18, 18, 22, 0.40);
+        /* Slightly more visible for contrast */
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
 
-        border-top-left-radius: 28px;
-        border-top-right-radius: 28px;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+        border-top-left-radius: 32px;
+        border-top-right-radius: 32px;
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 -10px 50px rgba(0, 0, 0, 0.6);
 
-        /* Peaking State (Default) */
+        /* Peaking State */
         height: auto;
         max-height: 18vh;
         overflow-y: auto;
-        padding: 20px 20px 120px 20px;
-        /* Large bottom pad for Pill */
+        padding: 24px 24px 120px 24px;
 
         transition: max-height 0.5s cubic-bezier(0.32, 0.72, 0, 1);
         z-index: 150;
     }
 
-    /* Expanded State (Triggered by JS scroll) */
     .lunar-cards.scrolled {
         max-height: 65vh;
     }
 
-    /* --- 4. Sheet Header --- */
+    /* --- 4. Sheet Header (Seamless Fix) --- */
     .sheet-header {
-        position: sticky;
+        position: relative;
+        /* Changed from sticky to avoid stacking issues */
         top: 0;
         z-index: 10;
-        padding-bottom: 10px;
-        margin-bottom: 10px;
+        padding-bottom: 12px;
+        margin-bottom: 12px;
 
-        /* Transparent Header */
-        background: rgba(15, 15, 18, 0.40);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        /* REMOVED: Background, borders, and negative margins */
+        background: transparent;
+        border: none;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        box-shadow: none;
 
-        border-radius: 28px 28px 0 0;
-        margin-left: -20px;
-        margin-right: -20px;
-        width: calc(100% + 40px);
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 16px;
+        gap: 12px;
     }
 
     .sheet-handle {
         display: block;
-        width: 40px;
-        height: 5px;
-        background: rgba(255, 255, 255, 0.2);
+        width: 36px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.3);
+        /* Brighter for visibility */
         border-radius: 10px;
-        margin: 0 auto 15px auto;
     }
 
     /* --- 5. Navigation Pill (Fixed Center Bottom) --- */
@@ -1304,37 +1312,42 @@ body.lunar-active .info-card {
         position: fixed !important;
         left: 50% !important;
         transform: translateX(-50%) !important;
-        bottom: max(20px, env(safe-area-inset-bottom) + 10px) !important;
+        bottom: max(24px, env(safe-area-inset-bottom) + 12px) !important;
+
         width: auto !important;
         min-width: 260px;
-        z-index: 200 !important;
-        /* FIXED: Lower than Info Card (300) */
+        z-index: 500 !important;
         display: flex;
         justify-content: center;
+        pointer-events: auto;
+        /* Ensure clickable */
     }
 
     .mode-segmented-control {
-        background: rgba(20, 20, 22, 0.95);
+        background: rgba(30, 30, 35, 0.9);
+        /* Opaque enough to read */
         border: 1px solid rgba(255, 255, 255, 0.15);
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
         padding: 4px;
         border-radius: 999px;
+        backdrop-filter: blur(10px);
     }
 
     .mode-btn {
-        padding: 10px 20px;
+        padding: 10px 18px;
         font-size: 12px;
         flex: 1;
+        white-space: nowrap;
     }
 
     /* --- 6. Info Card (Overlay) --- */
     .info-card {
         width: 100%;
-        border-radius: 28px 28px 0 0;
-        padding: 24px 24px 100px 24px;
-        max-height: 75vh;
-        z-index: 300;
-        /* Must be higher than Pill */
+        border-radius: 32px 32px 0 0;
+        padding: 28px 28px 100px 28px;
+        max-height: 80vh;
+        z-index: 600;
+        /* Higher than Pill */
         right: 0;
         left: 0;
         bottom: 0;
@@ -1352,7 +1365,7 @@ body.lunar-active .info-card {
 }
 
 /* =====================================================
-   INFO CARD SCROLLBAR (DESKTOP)
+   INFO CARD SCROLLBAR (DESKTOP)
 ===================================================== */
 .info-card-content::-webkit-scrollbar {
     width: 6px;
