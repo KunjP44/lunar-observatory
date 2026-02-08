@@ -4,7 +4,7 @@ const IS_LOCAL =
 
 export async function fetchMoonData(date) {
 
-    // Local dev → Python backend
+    // 🔹 Local dev → Python backend
     if (IS_LOCAL) {
         const res = await fetch(
             `http://127.0.0.1:8000/api/moon?date=${date}`
@@ -13,9 +13,9 @@ export async function fetchMoonData(date) {
         return await res.json();
     }
 
-    // GitHub Pages → static JSON (ABSOLUTE PATH)
+    // 🌍 GitHub Pages → static JSON (RELATIVE PATH)
     const res = await fetch(
-        `/lunar-observatory/frontend/public/data/moon/${date}.json`
+        `./frontend/public/data/moon/${date}.json`
     );
 
     if (!res.ok) {
