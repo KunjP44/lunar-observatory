@@ -89,21 +89,28 @@ document.getElementById("cancel-date").onclick = () => {
 document.getElementById("apply-date").onclick = async () => {
     if (!dateInput.value) return;
 
-    const lunarDate = new Date(dateInput.value);
-    await loadMoonForDate(lunarDate);
+    // 🔹 value is already YYYY-MM-DD
+    const isoDate = dateInput.value;
+
+    try {
+        const data = await fetchMoonData(isoDate);
+        updateMoonCards(data);
+
+        // ✅ Update header date explicitly
+        const d = new Date(isoDate);
+        document.getElementById("date-day").textContent = d.getDate();
+        document.getElementById("date-month").textContent =
+            d.toLocaleString("default", { month: "long", year: "numeric" });
+        document.getElementById("date-weekday").textContent =
+            d.toLocaleString("default", { weekday: "long" });
+
+    } catch (e) {
+        console.error("Date load failed:", e);
+        alert("No data available for this date");
+    }
 
     document.getElementById("date-picker").classList.add("hidden");
     document.getElementById("date-display").classList.remove("hidden");
-
-    // 🔥 RESET TO HERO VIEW
-    if (isMobile) {
-        const moonSheet = document.getElementById("moon-sheet");
-        moonSheet.scrollTop = 0;
-        moonSheet.style.height = "18vh";
-
-        const visual = document.querySelector(".lunar-visual");
-        if (visual) visual.style.filter = "none";
-    }
 };
 
 
