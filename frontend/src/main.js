@@ -91,12 +91,14 @@ document.getElementById("apply-date").onclick = async () => {
     if (!dateInput.value) return;
 
     // dateInput.value is already "YYYY-MM-DD"
-    const isoDate = dateInput.value;
 
     // Force midnight UTC to avoid timezone drift
-    const lunarDate = new Date(isoDate + "T00:00:00Z");
+    const selected = dateInput.value; // "2026-02-09" or "02/09/2026"
 
-    await loadMoonForDate(lunarDate);
+    // FORCE ISO FORMAT (YYYY-MM-DD)
+    const isoDate = new Date(selected).toISOString().slice(0, 10);
+
+    await loadMoonForDate(new Date(isoDate));
 
     document.getElementById("date-picker").classList.add("hidden");
     document.getElementById("date-display").classList.remove("hidden");

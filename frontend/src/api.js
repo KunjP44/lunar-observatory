@@ -13,9 +13,9 @@ export async function fetchMoonData(date) {
         return await res.json();
     }
 
-    // 🌍 GitHub Pages → static JSON (RELATIVE PATH)
+    // 🌍 GitHub Pages → static JSON (CORRECT PATH)
     const res = await fetch(
-        `./frontend/public/data/moon/${date}.json`
+        `/lunar-observatory/frontend/public/data/moon/${date}.json`
     );
 
     if (!res.ok) {
