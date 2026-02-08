@@ -1,4 +1,8 @@
 const ASSET_BASE = "./frontend/public/";
+const IS_LOCAL =
+    location.hostname === "localhost" ||
+    location.hostname === "127.0.0.1";
+
 import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
 import { loadInfoCard } from "./infoCard.js";
 import { fetchMoonData } from "./api.js";
@@ -1196,41 +1200,46 @@ function createCircularOrbit(aAU) {
 
 
 async function loadSolarForDate(dateObj) {
-    const iso = dateObj.toISOString().slice(0, 10);
-    const res = await fetch(
-        `http://127.0.0.1:8000/api/solar/positions?date=${iso}`
-    );
-
-    if (!res.ok) {
-        console.error("Solar API error:", res.status);
+    if (!IS_LOCAL) {
         return;
     }
 
-    const data = await res.json();
-    if (!data.positions) return;
-
-    // Sun stays fixed
-    if (planetMeshes.sun) planetMeshes.sun.position.set(0, 0, 0);
-    for (const name in data.positions) {
-        const meshKey = name.charAt(0).toUpperCase() + name.slice(1);
-        const mesh = planetMeshes[meshKey];
-        if (!mesh) continue;
-
-        const { theta } = data.positions[name];
-
-        // NEW: Sync the local angle with the backend data
-        planetAngles[meshKey] = theta;
-
-        const scaledDist = mapDistanceAU(PLANETS[meshKey].a);
-
-        mesh.position.set(
-            Math.cos(theta) * scaledDist,
-            0,
-            Math.sin(theta) * scaledDist
+    try {
+        const iso = dateObj.toISOString().slice(0, 10);
+        const res = await fetch(
+            `http://127.0.0.1:8000/api/solar/positions?date=${iso}`
         );
-    }
 
+        if (!res.ok) {
+            console.error("Solar API error:", res.status);
+            return;
+        }
+
+        const data = await res.json();
+        if (!data.positions) return;
+
+        if (planetMeshes.sun) planetMeshes.sun.position.set(0, 0, 0);
+
+        for (const name in data.positions) {
+            const meshKey = name.charAt(0).toUpperCase() + name.slice(1);
+            const mesh = planetMeshes[meshKey];
+            if (!mesh) continue;
+
+            const { theta } = data.positions[name];
+            planetAngles[meshKey] = theta;
+
+            const scaledDist = mapDistanceAU(PLANETS[meshKey].a);
+            mesh.position.set(
+                Math.cos(theta) * scaledDist,
+                0,
+                Math.sin(theta) * scaledDist
+            );
+        }
+    } catch (e) {
+        console.error("Solar backend unavailable:", e);
+    }
 }
+
 
 // Init Data
 (async () => {
