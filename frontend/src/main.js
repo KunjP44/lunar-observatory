@@ -73,6 +73,7 @@ async function loadMoonForDate(dateObj) {
     }
 }
 
+
 // Event Listeners for Date Picker
 document.getElementById("open-date-picker").onclick = () => {
     document.getElementById("date-display").classList.add("hidden");
@@ -89,29 +90,18 @@ document.getElementById("cancel-date").onclick = () => {
 document.getElementById("apply-date").onclick = async () => {
     if (!dateInput.value) return;
 
-    // 🔹 value is already YYYY-MM-DD
+    // dateInput.value is already "YYYY-MM-DD"
     const isoDate = dateInput.value;
 
-    try {
-        const data = await fetchMoonData(isoDate);
-        updateMoonCards(data);
+    // Force midnight UTC to avoid timezone drift
+    const lunarDate = new Date(isoDate + "T00:00:00Z");
 
-        // ✅ Update header date explicitly
-        const d = new Date(isoDate);
-        document.getElementById("date-day").textContent = d.getDate();
-        document.getElementById("date-month").textContent =
-            d.toLocaleString("default", { month: "long", year: "numeric" });
-        document.getElementById("date-weekday").textContent =
-            d.toLocaleString("default", { weekday: "long" });
-
-    } catch (e) {
-        console.error("Date load failed:", e);
-        alert("No data available for this date");
-    }
+    await loadMoonForDate(lunarDate);
 
     document.getElementById("date-picker").classList.add("hidden");
     document.getElementById("date-display").classList.remove("hidden");
 };
+
 
 
 
