@@ -1,12 +1,30 @@
-export async function fetchMoonData(dateStr, lat = null, lon = null) {
-    let url = `http://127.0.0.1:8000/moon?d=${dateStr}`;
+const IS_LOCAL =
+    location.hostname === "localhost" ||
+    location.hostname === "127.0.0.1";
 
-    if (lat !== null && lon !== null) {
-        url += `&lat=${lat}&lon=${lon}`;
+export async function fetchMoonData(date) {
+
+    // 🔹 Local development → Python backend
+    if (IS_LOCAL) {
+        const res = await fetch(
+            `http://127.0.0.1:8000/api/moon?date=${date}`
+        );
+
+        if (!res.ok) {
+            throw new Error("Moon API failed");
+        }
+
+        return await res.json();
     }
 
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("Backend error");
+    // 🌍 GitHub Pages → precomputed JSON
+    const res = await fetch(
+        `./data/moon/${date}.json`
+    );
+
+    if (!res.ok) {
+        throw new Error("Moon JSON not found for " + date);
+    }
 
     return await res.json();
 }
