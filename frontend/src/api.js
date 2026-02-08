@@ -4,26 +4,22 @@ const IS_LOCAL =
 
 export async function fetchMoonData(date) {
 
-    // 🔹 Local development → Python backend
+    // 🔹 Local → Python backend
     if (IS_LOCAL) {
         const res = await fetch(
             `http://127.0.0.1:8000/api/moon?date=${date}`
         );
-
-        if (!res.ok) {
-            throw new Error("Moon API failed");
-        }
-
+        if (!res.ok) throw new Error("Moon API failed");
         return await res.json();
     }
 
-    // 🌍 GitHub Pages → precomputed JSON
+    // 🌍 GitHub Pages → static JSON
     const res = await fetch(
-        `./data/moon/${date}.json`
+        `../public/data/moon/${date}.json`
     );
 
     if (!res.ok) {
-        throw new Error("Moon JSON not found for " + date);
+        throw new Error("Moon JSON not found");
     }
 
     return await res.json();
