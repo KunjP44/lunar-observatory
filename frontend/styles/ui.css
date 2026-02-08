@@ -1,0 +1,1401 @@
+/* =====================================================
+    MODERN DESIGN SYSTEM (Apple/Google Inspired)
+===================================================== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+:root {
+    /* Colors */
+    --bg-deep: #050505;
+    --card-bg: rgba(28, 28, 30, 0.65);
+    --card-bg-active: rgba(44, 44, 46, 0.75);
+    --card-border: rgba(255, 255, 255, 0.1);
+    --text-primary: #ffffff;
+    --text-secondary: rgba(235, 235, 245, 0.6);
+    --text-tertiary: rgba(235, 235, 245, 0.3);
+
+    /* Accents */
+    --accent-blue: #0a84ff;
+    --accent-purple: #bf5af2;
+    --accent-green: #32d74b;
+
+    /* Shapes */
+    --radius-lg: 20px;
+    --radius-md: 14px;
+    --radius-sm: 8px;
+    --radius-pill: 999px;
+
+    /* Effects */
+    --blur-md: 34px;
+    --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+
+body {
+    margin: 0;
+    background-color: var(--bg-deep);
+    overflow: hidden;
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: none;
+}
+
+
+/* =====================================================
+    LAYER & INTERACTION CONTROL
+===================================================== */
+/* =====================================================
+   INTERACTION LAYERS (FIXED & PREDICTABLE)
+===================================================== */
+
+/* Canvas */
+canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    pointer-events: auto;
+}
+
+/* Global UI layers */
+.ui-top,
+.ui-controls,
+.mode-switch-container {
+    z-index: 100;
+    pointer-events: none;
+}
+
+/* Re-enable only actual interactive elements */
+button,
+.mode-segmented-control,
+.info-card,
+.lunar-cards,
+.moon-card,
+.action-chip,
+.date-btn,
+.modern-date-input {
+    pointer-events: auto;
+}
+
+
+.ui-controls,
+.info-card,
+.mode-switch-container {
+    position: relative;
+    z-index: 10;
+}
+
+/* Only cards are interactive */
+.lunar-cards,
+.moon-card,
+.date-display,
+.date-picker,
+.action-chip,
+.date-btn,
+.modern-date-input {
+    pointer-events: auto;
+}
+
+/* Re-enable buttons */
+button,
+.mode-segmented-control {
+    pointer-events: auto;
+}
+
+/* =====================================================
+    GLOBAL UI ELEMENTS
+===================================================== */
+.ui-top {
+    position: fixed;
+    top: 32px;
+    left: 32px;
+}
+
+.ui-title {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0;
+}
+
+.ui-subtitle {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+.ui-alpha-note {
+    margin-top: 6px;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    color: var(--text-tertiary);
+    opacity: 0.75;
+    max-width: 240px;
+    line-height: 1.4;
+}
+
+
+.ui-controls {
+    position: fixed;
+    top: 32px;
+    right: 32px;
+    z-index: 100;
+}
+
+/* 2. The Glass Pill */
+.control-bar {
+    pointer-events: auto;
+    /* Re-enable clicks */
+    display: flex;
+    align-items: center;
+    background: rgba(30, 30, 35, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    /* Pill shape */
+    padding: 4px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.control-bar:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 3. Buttons (Shared Styles) */
+.control-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.control-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.control-btn:active {
+    transform: scale(0.96);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Icon-only buttons (Square-ish) */
+.control-btn.icon-only {
+    padding: 0;
+    width: 36px;
+    justify-content: center;
+}
+
+/* 4. Divider */
+.vertical-divider {
+    width: 1px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.15);
+    margin: 0 4px;
+}
+
+/* 5. Time Group */
+.time-group {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.time-display {
+    width: 48px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent-blue);
+    letter-spacing: 0.5px;
+    user-select: none;
+}
+
+.ui-date {
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    letter-spacing: 0.04em;
+}
+
+.solar-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    pointer-events: auto;
+}
+
+.time-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+#time-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    min-width: 30px;
+    text-align: right;
+}
+
+#time-scale {
+    width: 110px;
+    appearance: none;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+}
+
+#time-scale::-webkit-slider-thumb {
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.time-controls {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.time-controls label {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.time-controls input {
+    width: 120px;
+}
+
+.glass-btn {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 8px 16px;
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.glass-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.02);
+}
+
+.btn-icon {
+    font-size: 14px;
+}
+
+.ui-hint {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: rgba(0, 0, 0, 0.4);
+    padding: 8px 16px;
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    pointer-events: none;
+    backdrop-filter: blur(8px);
+    z-index: 90;
+}
+
+/* =====================================================
+    MODE SWITCHER (Bottom Dock)
+===================================================== */
+.mode-switch-container {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.mode-segmented-control {
+    background: rgba(30, 30, 32, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-pill);
+    padding: 4px;
+    display: flex;
+    gap: 4px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.mode-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 10px 24px;
+    border-radius: var(--radius-pill);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.mode-btn:hover {
+    color: white;
+}
+
+.mode-btn.active {
+    background: rgba(255, 255, 255, 0.12);
+    color: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* =====================================================
+    LUNAR OBSERVATORY LAYOUT
+===================================================== */
+.moon-mode {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+}
+
+.moon-mode .lunar-cards,
+.moon-mode .moon-card {
+    pointer-events: auto;
+}
+
+.moon-mode.hidden {
+    /* opacity: 0; */
+    display: none;
+}
+
+.lunar-layout {
+    display: grid;
+    grid-template-columns: 1fr 500px;
+    height: 100vh;
+    width: 100vw;
+}
+
+.lunar-visual {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* SIDEBAR CARD CONTAINER */
+.lunar-cards {
+    max-height: 100vh;
+    padding: 100px 32px 120px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: linear-gradient(to left, rgba(0, 0, 0, 0.85) 20%, transparent 100%);
+    pointer-events: none;
+    scroll-behavior: contain;
+}
+
+/* Enable pointer events on the container only when active to allow scroll */
+.moon-mode:not(.hidden) .lunar-cards {
+    pointer-events: auto;
+}
+
+.lunar-cards::-webkit-scrollbar {
+    width: 4px;
+}
+
+.lunar-cards::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.sheet-modes {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    pointer-events: auto;
+}
+
+
+/* =====================================================
+    CARD DESIGN (BENTO GRID STYLE)
+===================================================== */
+.moon-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(var(--blur-md));
+    -webkit-backdrop-filter: blur(var(--blur-md));
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-card);
+
+    /* Entry Animation */
+    transform: translateX(40px);
+    opacity: 0;
+    transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+    pointer-events: auto;
+    /* Cards must be clickable */
+}
+
+.moon-mode:not(.hidden) .moon-card {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.moon-mode:not(.hidden) .moon-card:nth-child(1) {
+    transition-delay: 0.1s;
+}
+
+.moon-mode:not(.hidden) .moon-card:nth-child(2) {
+    transition-delay: 0.15s;
+}
+
+.moon-mode:not(.hidden) .moon-card:nth-child(3) {
+    transition-delay: 0.2s;
+}
+
+.moon-mode:not(.hidden) .moon-card:nth-child(4) {
+    transition-delay: 0.25s;
+}
+
+/* HEADER ROW WITH ICON */
+.card-header-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.icon-box {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.icon-box.blue {
+    background: rgba(10, 132, 255, 0.2);
+    color: var(--accent-blue);
+}
+
+.icon-box.purple {
+    background: rgba(191, 90, 242, 0.2);
+    color: var(--accent-purple);
+}
+
+.icon-box.green {
+    background: rgba(50, 215, 75, 0.2);
+    color: var(--accent-green);
+}
+
+.moon-card h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+}
+
+/* Only the cards should be interactive */
+.moon-mode:not(.hidden) .moon-card,
+.moon-mode:not(.hidden) .lunar-cards {
+    pointer-events: auto;
+}
+
+/* Ensure lunar layout never blocks canvas drag */
+
+
+.focus-indicator {
+    position: fixed;
+    top: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-6px);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 10px 18px;
+    border-radius: var(--radius-pill);
+
+    background: rgba(20, 20, 24, 0.65);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.35s ease;
+    z-index: 120;
+}
+
+.focus-indicator span {
+    color: white;
+    letter-spacing: 0.06em;
+}
+
+/* Only show when JS explicitly adds .focused */
+body.focused .focus-indicator {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Hide it completely in lunar mode */
+body.lunar-active .focus-indicator {
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+body.lunar-active .info-card {
+    opacity: 0 !important;
+    transform: translateY(20px) scale(0.95) !important;
+    pointer-events: none !important;
+}
+
+.desc-short {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--text-secondary);
+    margin-top: -4px;
+}
+
+.quick-facts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.quick-facts div {
+    padding: 10px 12px;
+    border-radius: 12px;
+
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.quick-facts span:first-child {
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+}
+
+.quick-facts span:last-child {
+    font-size: 13px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.toggle-btn {
+    margin-top: 6px;
+    align-self: flex-start;
+
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+
+    padding: 8px 14px;
+    border-radius: 999px;
+
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.card-details {
+    margin-top: 10px;
+    padding-top: 14px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.card-details p {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.card-details h4 {
+    margin: 0;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+}
+
+.card-details ul {
+    list-style: none;
+    padding: 0;
+    margin: 6px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.card-details li {
+    font-size: 13px;
+    color: var(--text-primary);
+    padding-left: 10px;
+    position: relative;
+}
+
+.card-details li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: rgba(255, 255, 255, 0.25);
+}
+
+
+
+/* DATA LIST STYLES */
+.data-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.data-row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 16px;
+    align-items: center;
+    font-size: 14px;
+}
+
+.data-row .label {
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.data-row .value {
+    text-align: right;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+.data-row .value.highlight {
+    color: var(--accent-blue);
+    font-weight: 600;
+}
+
+/* =====================================================
+    HERO CARD: DATE NAVIGATOR
+===================================================== */
+.hero-card {
+    background: linear-gradient(145deg, rgba(40, 40, 45, 0.7), rgba(28, 28, 30, 0.7));
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* DISPLAY STATE */
+.date-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    animation: fadeIn 0.3s ease;
+}
+
+.date-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.date-big {
+    font-size: 42px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+
+.date-col {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.date-month {
+    font-size: 15px;
+    font-weight: 600;
+    color: white;
+}
+
+.date-weekday {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.action-chip {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    padding: 6px 10px 6px 14px;
+    border-radius: var(--radius-pill);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.action-chip:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* PICKER STATE */
+.date-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: slideDown 0.3s ease;
+}
+
+.date-picker.hidden {
+    display: none;
+}
+
+.picker-header {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.modern-date-input {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--card-border);
+    color: white;
+    padding: 10px;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    text-align: center;
+    color-scheme: dark;
+}
+
+.picker-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.date-btn {
+    flex: 1;
+    border: none;
+    padding: 10px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.date-btn.secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.date-btn.primary {
+    background: var(--accent-blue);
+    color: white;
+}
+
+.date-btn:hover {
+    opacity: 0.8;
+}
+
+/* ANIMATIONS */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.info-card {
+    position: fixed;
+    right: 32px;
+    bottom: 32px;
+    top: auto;
+    width: 340px;
+    max-height: calc(100vh - 140px);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 22px 22px 24px;
+    background:
+        linear-gradient(180deg,
+            rgba(30, 30, 34, 0.78),
+            rgba(18, 18, 20, 0.82));
+    backdrop-filter: blur(32px) saturate(120%);
+    -webkit-backdrop-filter: blur(32px) saturate(120%);
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+    overflow: hidden;
+
+    transition: all 0.45s cubic-bezier(0.19, 1, 0.22, 1);
+    z-index: 110;
+}
+
+.info-card.hidden {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+    pointer-events: none;
+}
+
+.info-card-content {
+    overflow-y: auto;
+    max-height: 100%;
+    padding-right: 6px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+    overscroll-behavior: contain;
+}
+
+.info-card-content .card-details {
+    display: none;
+}
+
+.info-card.collapsed {
+    max-height: 260px;
+}
+
+.info-card.expanded {
+    max-height: calc(100vh - 160px);
+}
+
+.info-card.expanded .card-details {
+    display: block;
+}
+
+.card-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.card-close:hover {
+    color: white;
+}
+
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.card-header h2 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+#card-type {
+    padding: 4px 10px;
+    border-radius: 999px;
+
+    background: rgba(10, 132, 255, 0.18);
+    color: var(--accent-blue);
+
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+
+/* ============================
+   INFO CARD CONTENT (JSON DATA)
+============================ */
+.info-card .card-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.card-details h4 {
+    margin-top: 18px;
+}
+
+
+.info-card .card-subtitle {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+
+.info-card .card-section {
+    margin-top: 16px;
+}
+
+.info-card .card-section h4 {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.info-card .fact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.info-card .fact-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+}
+
+.info-card .fact-row span:first-child {
+    color: var(--text-secondary);
+}
+
+.info-card .fact-row span:last-child {
+    font-weight: 600;
+}
+
+
+.card-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+
+
+.card-header h2 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.badge {
+    background: var(--accent-blue);
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.quick-facts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 16px 0;
+}
+
+.quick-facts div {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.quick-facts span:first-child {
+    font-size: 9px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+.quick-facts span:last-child {
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* =====================================================
+    BACKGROUND & LOADER
+===================================================== */
+#env-gradient {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(circle at center, #111 0%, #000 100%);
+}
+
+#env-gradient.lunar {
+    background: radial-gradient(circle at 40% 50%, rgba(20, 30, 50, 0.5) 0%, #000 100%);
+    animation: pulseBg 10s infinite alternate;
+}
+
+@keyframes pulseBg {
+    0% {
+        opacity: 0.8;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+#loader {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.loader-spinner {
+    width: 30px;
+    height: 30px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 1s infinite linear;
+    margin-bottom: 16px;
+}
+
+.loader-text {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* =====================================================
+   MOBILE RESPONSIVE FIXES
+===================================================== */
+/* =====================================================
+   MOBILE RESPONSIVE FIXES
+===================================================== */
+/* =====================================================
+   MOBILE RESPONSIVE FIXES
+===================================================== */
+/* =====================================================
+   MOBILE RESPONSIVE FIXES (CLEANED & FIXED)
+===================================================== */
+/* =====================================================
+   MOBILE RESPONSIVE FIXES (FINAL POLISH)
+===================================================== */
+@media (max-width: 768px) {
+
+    /* --- 1. Top Bar Protection --- */
+    .ui-top {
+        top: max(20px, env(safe-area-inset-top) + 12px);
+        left: 20px;
+        right: 20px;
+        max-width: none;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .ui-title {
+        font-size: 16px;
+        text-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+    }
+
+    .ui-subtitle,
+    .ui-alpha-note {
+        display: none;
+    }
+
+    /* --- 2. Controls (Top Right) --- */
+    .ui-controls {
+        top: max(20px, env(safe-area-inset-top) + 12px);
+        right: 20px;
+    }
+
+    .control-bar {
+        padding: 3px;
+        transform: scale(0.95);
+        transform-origin: right top;
+        background: rgba(20, 20, 22, 0.85);
+    }
+
+    #reset-view .btn-label {
+        display: none;
+    }
+
+    #reset-view {
+        padding: 0;
+        width: 36px;
+        justify-content: center;
+    }
+
+    /* Fix Focus Indicator Position */
+    .focus-indicator {
+        top: 90px !important;
+        transform: translateX(-50%) !important;
+        font-size: 10px;
+        padding: 8px 14px;
+        z-index: 90;
+    }
+
+    /* --- 3. Layout (Peaking Sheet Effect) --- */
+    .lunar-layout {
+        display: flex;
+        flex-direction: column;
+        height: 100dvh;
+        overflow: hidden;
+    }
+
+    .lunar-visual {
+        flex: 1;
+        width: 100%;
+        min-height: 30vh;
+        transition: flex 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+    }
+
+    /* THE GLASS SHEET */
+    .lunar-cards {
+        position: relative;
+        width: 100%;
+
+        /* Unified Glass Background */
+        background: rgba(18, 18, 22, 0.40);
+        /* Slightly more visible for contrast */
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+
+        border-top-left-radius: 32px;
+        border-top-right-radius: 32px;
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 -10px 50px rgba(0, 0, 0, 0.6);
+
+        /* Peaking State */
+        height: auto;
+        max-height: 18vh;
+        overflow-y: auto;
+        padding: 24px 24px 120px 24px;
+
+        transition: max-height 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+        z-index: 150;
+    }
+
+    .lunar-cards.scrolled {
+        max-height: 65vh;
+    }
+
+    /* --- 4. Sheet Header (Seamless Fix) --- */
+    .sheet-header {
+        position: relative;
+        /* Changed from sticky to avoid stacking issues */
+        top: 0;
+        z-index: 10;
+        padding-bottom: 12px;
+        margin-bottom: 12px;
+
+        /* REMOVED: Background, borders, and negative margins */
+        background: transparent;
+        border: none;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        box-shadow: none;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .sheet-handle {
+        display: block;
+        width: 36px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.3);
+        /* Brighter for visibility */
+        border-radius: 10px;
+    }
+
+    /* --- 5. Navigation Pill (Fixed Center Bottom) --- */
+    .mode-switch-container {
+        position: fixed !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        bottom: max(24px, env(safe-area-inset-bottom) + 12px) !important;
+
+        width: auto !important;
+        min-width: 260px;
+        z-index: 500 !important;
+        display: flex;
+        justify-content: center;
+        pointer-events: auto;
+        /* Ensure clickable */
+    }
+
+    .mode-segmented-control {
+        background: rgba(30, 30, 35, 0.9);
+        /* Opaque enough to read */
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        padding: 4px;
+        border-radius: 999px;
+        backdrop-filter: blur(10px);
+    }
+
+    .mode-btn {
+        padding: 10px 18px;
+        font-size: 12px;
+        flex: 1;
+        white-space: nowrap;
+    }
+
+    /* --- 6. Info Card (Overlay) --- */
+    .info-card {
+        width: 100%;
+        border-radius: 32px 32px 0 0;
+        padding: 28px 28px 100px 28px;
+        max-height: 80vh;
+        z-index: 600;
+        /* Higher than Pill */
+        right: 0;
+        left: 0;
+        bottom: 0;
+        top: auto;
+    }
+
+    .info-card.hidden {
+        transform: translateY(110%);
+        opacity: 1;
+    }
+
+    .ui-hint {
+        display: none;
+    }
+}
+
+/* =====================================================
+   INFO CARD SCROLLBAR (DESKTOP)
+===================================================== */
+.info-card-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.info-card-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.info-card-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 10px;
+}
+
+.info-card-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+#focus-overlay {
+    pointer-events: none;
+}
+
+#focus-overlay.active {
+    pointer-events: auto;
+}
+
+#page-transition {
+    pointer-events: none;
+}
+
+#page-transition.active {
+    pointer-events: none;
+}

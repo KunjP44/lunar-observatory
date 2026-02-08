@@ -1,0 +1,96 @@
+{
+  "id": "jupiter",
+  "name": "Jupiter",
+  "type": "Planet",
+  "parent": "Sun",
+  "quick_facts": {
+    "distance_km": 778547200,
+    "radius_km": 69911,
+    "gravity_m_s2": 24.79,
+    "orbital_period_days": 4332.59,
+    "rotation_period_hours": 9.93,
+    "mean_temperature_c": -108
+  },
+  "physical_properties": {
+    "mass_kg": "1.898 × 10^27",
+    "density_g_cm3": 1.33,
+    "escape_velocity_km_s": 59.5,
+    "axial_tilt_deg": 3.13,
+    "albedo": 0.504
+  },
+  "orbit": {
+    "semi_major_axis_km": 778547200,
+    "eccentricity": 0.0489,
+    "inclination_deg": 1.304,
+    "orbital_velocity_km_s": 13.07
+  },
+  "surface": {
+    "composition": [
+      "Molecular hydrogen",
+      "Helium",
+      "Methane (trace)",
+      "Ammonia (trace)"
+    ],
+    "major_features": [
+      "Great Red Spot (long-lived storm)",
+      "Banding of clouds and jet streams",
+      "Powerful magnetic field",
+      "No solid surface (gas giant)"
+    ]
+  },
+  "atmosphere": {
+    "composition": [
+      "Hydrogen (~89.8%)",
+      "Helium (~10.2%)",
+      "Methane (trace)",
+      "Ammonia (trace)",
+      "Water vapor (trace)"
+    ],
+    "layers": [
+      "Troposphere",
+      "Stratosphere",
+      "Thermosphere",
+      "Magnetosphere"
+    ]
+  },
+  "moons": {
+    "names": [
+      "Io",
+      "Europa",
+      "Ganymede",
+      "Callisto",
+      "Amalthea",
+      "Himalia",
+      "Elara",
+      "Pasiphae",
+      "Sinope"
+    ],
+    "origin": "Formed in a circumplanetary disk; includes many captured objects"
+  },
+  "exploration": {
+    "first_observation": {
+      "by": "Ancient civilizations",
+      "method": "Naked eye astronomy"
+    },
+    "space_exploration": [
+      "Pioneer 10 & 11 (1973-1974)",
+      "Voyager 1 & 2 (1979 flybys)",
+      "Galileo (orbiter, 1995-2003)",
+      "Juno (orbiter, 2016-present)"
+    ],
+    "current_interest": [
+      "Interior structure and composition",
+      "Atmospheric dynamics and storms",
+      "Habitability of icy moons (Europa, Ganymede)",
+      "Magnetosphere and radiation environment"
+    ]
+  },
+  "fun_facts": [
+    "Jupiter is the largest planet in the Solar System.",
+    "Ganymede is the largest moon in the Solar System and is bigger than Mercury.",
+    "The Great Red Spot has existed for at least hundreds of years.",
+    "Jupiter's strong gravity shaped the early Solar System and protected inner planets from some comet impacts."
+  ],
+  "description_short": "The largest gas giant, dominant in mass and presence in the outer Solar System.",
+  "description_long": "Jupiter is a gas giant composed mainly of hydrogen and helium, the largest planet in the Solar System. It has a complex atmosphere with powerful storms, including the Great Red Spot, and a strong magnetic field. Jupiter hosts a large system of moons, including the Galilean satellites, some of which (notably Europa) are prime targets in the search for subsurface oceans and potential habitability. Extensive exploration by flybys and orbiters like Galileo and Juno has greatly expanded our knowledge of the planet's atmosphere, magnetosphere, and interior."
+}

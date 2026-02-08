@@ -1,0 +1,95 @@
+{
+  "id": "saturn",
+  "name": "Saturn",
+  "type": "Planet",
+  "parent": "Sun",
+  "quick_facts": {
+    "distance_km": 1429400000,
+    "radius_km": 58232,
+    "gravity_m_s2": 10.44,
+    "orbital_period_days": 10759,
+    "rotation_period_hours": 10.7,
+    "mean_temperature_c": -139
+  },
+  "physical_properties": {
+    "mass_kg": "5.683 × 10^26",
+    "density_g_cm3": 0.687,
+    "escape_velocity_km_s": 35.5,
+    "axial_tilt_deg": 26.73,
+    "albedo": 0.47
+  },
+  "orbit": {
+    "semi_major_axis_km": 1429390000,
+    "eccentricity": 0.0565,
+    "inclination_deg": 2.49,
+    "orbital_velocity_km_s": 9.69
+  },
+  "surface": {
+    "composition": [
+      "Hydrogen (molecular)",
+      "Helium",
+      "Trace methane",
+      "Ammonia clouds"
+    ],
+    "major_features": [
+      "Extensive ring system",
+      "Hexagonal storm at north pole",
+      "Band structure and long-lived storms",
+      "Numerous moons and shepherd moons"
+    ]
+  },
+  "atmosphere": {
+    "composition": [
+      "Hydrogen (~96.3%)",
+      "Helium (~3.25%)",
+      "Methane (trace)",
+      "Ammonia (trace)"
+    ],
+    "layers": [
+      "Troposphere",
+      "Stratosphere",
+      "Mesosphere",
+      "Thermosphere",
+      "Exosphere"
+    ]
+  },
+  "moons": {
+    "names": [
+      "Titan",
+      "Rhea",
+      "Iapetus",
+      "Dione",
+      "Enceladus",
+      "Tethys",
+      "Mimas",
+      "Hyperion",
+      "Phoebe"
+    ],
+    "origin": "Formed in the outer solar nebula (plus captured objects)"
+  },
+  "exploration": {
+    "first_observation": {
+      "by": "Ancient civilizations",
+      "method": "Naked eye astronomy"
+    },
+    "space_exploration": [
+      "Pioneer 11 (1979)",
+      "Voyager 1 & 2 (1980-1981)",
+      "Cassini-Huygens (2004-2017)"
+    ],
+    "current_interest": [
+      "Ring dynamics and origin",
+      "Habitability of icy moons (e.g., Enceladus, Titan)",
+      "Atmospheric chemistry",
+      "Seasonal changes"
+    ]
+  },
+  "fun_facts": [
+    "Saturn is the second-largest planet in the Solar System.",
+    "Its rings are made of ice and rock particles ranging from dust to meters across.",
+    "Titan, Saturn's largest moon, has a dense atmosphere and liquid hydrocarbon lakes.",
+    "Saturn is the least dense planet; it would float in water if a large enough pool existed."
+  ],
+  "description_short": "The gas giant famous for its extensive ring system.",
+  "description_long": "Saturn is a gas giant and the sixth planet from the Sun, noted for its spectacular rings and many moons. Composed primarily of hydrogen and helium, Saturn has prominent banding and long-lived storms in its atmosphere. Its system of icy moons, including Titan and Enceladus, are of high scientific interest for studies of prebiotic chemistry and subsurface oceans. Major exploration was performed by the Cassini-Huygens mission, which greatly expanded knowledge of the planet, its rings, and moons."
+}

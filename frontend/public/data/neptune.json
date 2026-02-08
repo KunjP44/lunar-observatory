@@ -1,0 +1,86 @@
+{
+  "id": "neptune",
+  "name": "Neptune",
+  "type": "Planet",
+  "parent": "Sun",
+  "quick_facts": {
+    "distance_km": 4495060000,
+    "radius_km": 24622,
+    "gravity_m_s2": 11.15,
+    "orbital_period_days": 60190,
+    "rotation_period_hours": 16.11,
+    "mean_temperature_c": -200
+  },
+  "physical_properties": {
+    "mass_kg": "1.024 × 10^26",
+    "density_g_cm3": 1.64,
+    "escape_velocity_km_s": 23.5,
+    "axial_tilt_deg": 28.32,
+    "albedo": 0.41
+  },
+  "orbit": {
+    "semi_major_axis_km": 4495060000,
+    "eccentricity": 0.0113,
+    "inclination_deg": 1.77,
+    "orbital_velocity_km_s": 5.43
+  },
+  "surface": {
+    "composition": [
+      "Molecular hydrogen",
+      "Helium",
+      "Water, ammonia, and methane ices (interior)"
+    ],
+    "major_features": [
+      "Strong banded cloud structure",
+      "Great Dark Spot (transient storm)",
+      "Supersonic winds",
+      "No solid surface (ice giant)"
+    ]
+  },
+  "atmosphere": {
+    "composition": [
+      "Hydrogen (~80%)",
+      "Helium (~19%)",
+      "Methane (~1.5%)",
+      "Trace hydrocarbons"
+    ],
+    "layers": [
+      "Troposphere",
+      "Stratosphere",
+      "Thermosphere",
+      "Exosphere"
+    ]
+  },
+  "moons": {
+    "names": [
+      "Triton",
+      "Nereid",
+      "Proteus",
+      "Larissa",
+      "Galatea"
+    ],
+    "origin": "Formed in the outer solar nebula; includes captured objects (e.g., Triton)"
+  },
+  "exploration": {
+    "first_observation": {
+      "by": "Urbain Le Verrier (predicted), Johann Galle (observed, 1846)",
+      "method": "Telescopic discovery"
+    },
+    "space_exploration": [
+      "Voyager 2 (flyby, 1989)"
+    ],
+    "current_interest": [
+      "Atmospheric dynamics and extreme winds",
+      "Interior structure and heat source",
+      "Triton as a captured Kuiper belt object with possible geologic activity",
+      "Comparative studies of ice giants"
+    ]
+  },
+  "fun_facts": [
+    "Neptune has the strongest sustained winds in the Solar System.",
+    "Triton orbits Neptune retrograde and may be a captured Kuiper belt object.",
+    "Voyager 2 remains the only spacecraft to visit Neptune up close."
+  ],
+  "description_short": "The distant ice giant with extreme winds and a dynamic atmosphere.",
+  "description_long": "Neptune is the eighth planet from the Sun and an ice giant composed mainly of hydrogen, helium, and volatile ices. It exhibits powerful winds, dynamic storms, and a system of moons including Triton, which likely originated in the Kuiper belt. Voyager 2's 1989 flyby provided the bulk of our close-up knowledge; Neptune remains a high-priority target for future missions to study ice giant formation, atmospheric physics, and satellite oceans."
+}

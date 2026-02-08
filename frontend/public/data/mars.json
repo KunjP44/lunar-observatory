@@ -1,0 +1,87 @@
+{
+  "id": "mars",
+  "name": "Mars",
+  "type": "Planet",
+  "parent": "Sun",
+  "quick_facts": {
+    "distance_km": 227943824,
+    "radius_km": 3389.5,
+    "gravity_m_s2": 3.721,
+    "orbital_period_days": 687,
+    "rotation_period_hours": 24.6,
+    "mean_temperature_c": -63
+  },
+  "physical_properties": {
+    "mass_kg": "6.417 × 10^23",
+    "density_g_cm3": 3.93,
+    "escape_velocity_km_s": 5.03,
+    "axial_tilt_deg": 25.19,
+    "albedo": 0.25
+  },
+  "orbit": {
+    "semi_major_axis_km": 227939200,
+    "eccentricity": 0.0934,
+    "inclination_deg": 1.85,
+    "orbital_velocity_km_s": 24.077
+  },
+  "surface": {
+    "composition": [
+      "Basaltic rock",
+      "Iron oxide (rust)",
+      "Silicates",
+      "Dust"
+    ],
+    "major_features": [
+      "Olympus Mons (largest volcano in Solar System)",
+      "Valles Marineris (giant canyon system)",
+      "Polar Ice Caps",
+      "Impact craters"
+    ]
+  },
+  "atmosphere": {
+    "composition": [
+      "Carbon Dioxide (95.3%)",
+      "Nitrogen (2.7%)",
+      "Argon (1.6%)",
+      "Oxygen (0.13%)",
+      "Trace gases"
+    ],
+    "layers": [
+      "Troposphere",
+      "Mesosphere",
+      "Thermosphere",
+      "Exosphere"
+    ]
+  },
+  "moons": {
+    "names": ["Phobos", "Deimos"],
+    "origin": "Likely captured asteroids"
+  },
+  "exploration": {
+    "first_observation": {
+      "by": "Ancient civilizations",
+      "method": "Naked eye astronomy"
+    },
+    "space_exploration": [
+      "Mariner 4 (first flyby, 1965)",
+      "Viking landers (1976)",
+      "Mars Rovers: Spirit, Opportunity, Curiosity, Perseverance",
+      "Mars Reconnaissance Orbiter",
+      "ExoMars mission"
+    ],
+    "current_interest": [
+      "Search for past microbial life",
+      "Human colonization prospects",
+      "Water ice deposits",
+      "Terraforming studies"
+    ]
+  },
+  "fun_facts": [
+    "Mars is often called the 'Red Planet' due to iron oxide dust.",
+    "A Martian day (sol) is just 40 minutes longer than Earth's.",
+    "Olympus Mons is about three times taller than Mount Everest.",
+    "Mars has the largest dust storms in the Solar System."
+  ],
+  "description_short": "The fourth planet from the Sun, known as the Red Planet.",
+  "description_long": "Mars formed about 4.6 billion years ago and is the second smallest planet in the Solar System. Its thin atmosphere and cold climate make it inhospitable to humans today, but evidence suggests liquid water once flowed across its surface. Mars has two small moons, Phobos and Deimos, and features dramatic landscapes including giant volcanoes and canyons. Scientists are intensely studying Mars for signs of past life and as a potential future home for humanity."
+}

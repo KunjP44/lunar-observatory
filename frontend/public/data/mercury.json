@@ -1,0 +1,83 @@
+{
+  "id": "mercury",
+  "name": "Mercury",
+  "type": "Planet",
+  "parent": "Sun",
+  "quick_facts": {
+    "distance_km": 57909050,
+    "radius_km": 2439.7,
+    "gravity_m_s2": 3.7,
+    "orbital_period_days": 87.97,
+    "rotation_period_hours": 1407.6,
+    "mean_temperature_c": 167
+  },
+  "physical_properties": {
+    "mass_kg": "3.285 × 10^23",
+    "density_g_cm3": 5.43,
+    "escape_velocity_km_s": 4.25,
+    "axial_tilt_deg": 0.04,
+    "albedo": 0.142
+  },
+  "orbit": {
+    "semi_major_axis_km": 57909227,
+    "eccentricity": 0.2056,
+    "inclination_deg": 7.0,
+    "orbital_velocity_km_s": 47.87
+  },
+  "surface": {
+    "composition": [
+      "Silicate rock",
+      "Iron oxide",
+      "Sulfur compounds",
+      "Metallic iron in core"
+    ],
+    "major_features": [
+      "Caloris Basin (largest impact crater)",
+      "Scarps and ridges",
+      "Smooth plains",
+      "Impact craters"
+    ]
+  },
+  "atmosphere": {
+    "composition": [
+      "Oxygen (42%)",
+      "Sodium (29%)",
+      "Hydrogen (22%)",
+      "Helium (6%)",
+      "Trace gases"
+    ],
+    "layers": [
+      "Exosphere (very thin atmosphere)"
+    ]
+  },
+  "moons": {
+    "names": [],
+    "origin": "No known natural satellites"
+  },
+  "exploration": {
+    "first_observation": {
+      "by": "Ancient civilizations",
+      "method": "Naked eye astronomy"
+    },
+    "space_exploration": [
+      "Mariner 10 (1974-1975)",
+      "MESSENGER (2011-2015)",
+      "BepiColombo (ongoing since 2018)"
+    ],
+    "current_interest": [
+      "Understanding planetary formation",
+      "Magnetic field dynamics",
+      "Surface composition analysis",
+      "Solar wind interaction"
+    ]
+  },
+  "fun_facts": [
+    "Mercury is the smallest planet in the Solar System.",
+    "It is the closest planet to the Sun.",
+    "Mercury has extreme temperature variations: -173°C to 427°C.",
+    "A year on Mercury (87.97 days) is shorter than its day (1407.6 hours).",
+    "Mercury has no moons or rings."
+  ],
+  "description_short": "The smallest and fastest planet, closest to the Sun.",
+  "description_long": "Mercury is the closest planet to the Sun and the smallest planet in our Solar System. It has an extremely thin atmosphere and extreme temperature variations between its day and night sides. Despite being closest to the Sun, it is not the hottest planet due to its minimal atmosphere. Mercury is a rocky, cratered world with a large iron core. Its rapid orbital motion around the Sun earned it the name of the Roman messenger god."
+}

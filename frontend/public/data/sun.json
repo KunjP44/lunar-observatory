@@ -1,0 +1,73 @@
+{
+  "id": "sun",
+  "name": "Sun",
+  "type": "Star",
+  "parent": "Milky Way Galaxy",
+  "quick_facts": {
+    "distance_km": 0,
+    "radius_km": 696340,
+    "gravity_m_s2": 274,
+    "orbital_period_days": "225 million years (around galaxy)",
+    "rotation_period_days": "25 (equator) – 35 (poles)",
+    "mean_temperature_c": 5505
+  },
+  "physical_properties": {
+    "mass_kg": "1.989 × 10^30",
+    "density_g_cm3": 1.41,
+    "escape_velocity_km_s": 617.7,
+    "axial_tilt_deg": 7.25,
+    "luminosity_w": "3.828 × 10^26",
+    "albedo": 0.0
+  },
+  "orbit": {
+    "semi_major_axis_km": "Around Milky Way center ~2.7 × 10^17 km",
+    "eccentricity": 0.067,
+    "inclination_deg": 63,
+    "orbital_velocity_km_s": 828000
+  },
+  "structure": {
+    "layers": [
+      "Core",
+      "Radiative Zone",
+      "Convective Zone",
+      "Photosphere",
+      "Chromosphere",
+      "Corona"
+    ],
+    "composition": [
+      "Hydrogen (~74%)",
+      "Helium (~24%)",
+      "Trace elements (Oxygen, Carbon, Neon, Iron)"
+    ]
+  },
+  "energy": {
+    "process": "Nuclear fusion (Hydrogen → Helium)",
+    "output": "Light, heat, solar wind, electromagnetic radiation"
+  },
+  "exploration": {
+    "first_observation": {
+      "by": "Ancient civilizations",
+      "method": "Naked eye astronomy"
+    },
+    "space_exploration": [
+      "SOHO (Solar and Heliospheric Observatory)",
+      "Parker Solar Probe",
+      "Solar Dynamics Observatory",
+      "Solar Orbiter"
+    ],
+    "current_interest": [
+      "Solar flares and coronal mass ejections",
+      "Space weather impact on Earth",
+      "Understanding stellar evolution"
+    ]
+  },
+  "fun_facts": [
+    "The Sun contains 99.86% of the Solar System’s mass.",
+    "Light from the Sun takes about 8 minutes to reach Earth.",
+    "The Sun will eventually become a red giant in ~5 billion years.",
+    "Solar wind creates auroras on Earth."
+  ],
+  "description_short": "The central star of the Solar System, providing energy and light essential for life on Earth.",
+  "description_long": "The Sun is a G-type main-sequence star (yellow dwarf) formed about 4.6 billion years ago. Its immense gravity holds the Solar System together, keeping planets, asteroids, and comets in orbit. Through nuclear fusion in its core, the Sun converts hydrogen into helium, releasing vast amounts of energy that drive Earth’s climate and sustain life. Solar activity, including sunspots and flares, influences space weather and can disrupt satellites and power grids. The Sun will continue shining for billions of years before evolving into a red giant and eventually a white dwarf."
+}
+

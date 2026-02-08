@@ -1,0 +1,90 @@
+{
+  "id": "venus",
+  "name": "Venus",
+  "type": "Planet",
+  "parent": "Sun",
+  "quick_facts": {
+    "distance_km": 108208000,
+    "radius_km": 6051.8,
+    "gravity_m_s2": 8.87,
+    "orbital_period_days": 224.7,
+    "rotation_period_hours": 2802.0,
+    "mean_temperature_c": 464
+  },
+  "physical_properties": {
+    "mass_kg": "4.867 × 10^24",
+    "density_g_cm3": 5.24,
+    "escape_velocity_km_s": 10.36,
+    "axial_tilt_deg": 177.36,
+    "albedo": 0.7
+  },
+  "orbit": {
+    "semi_major_axis_km": 108208930,
+    "eccentricity": 0.0067,
+    "inclination_deg": 3.39,
+    "orbital_velocity_km_s": 35.02
+  },
+  "surface": {
+    "composition": [
+      "Basaltic rock",
+      "Silicates",
+      "Iron oxides",
+      "Sulfur compounds"
+    ],
+    "major_features": [
+      "Maxwell Montes (highest mountain)",
+      "Ishtar Terra (highland region)",
+      "Vast lava plains",
+      "Coronae (circular structures)",
+      "Numerous volcanoes"
+    ]
+  },
+  "atmosphere": {
+    "composition": [
+      "Carbon Dioxide (96.5%)",
+      "Nitrogen (3.5%)",
+      "Sulfur Dioxide (150 ppm)",
+      "Argon (70 ppm)",
+      "Trace gases"
+    ],
+    "layers": [
+      "Troposphere",
+      "Mesosphere",
+      "Thermosphere",
+      "Exosphere"
+    ]
+  },
+  "moons": {
+    "names": [],
+    "origin": "No known natural satellites"
+  },
+  "exploration": {
+    "first_observation": {
+      "by": "Ancient civilizations",
+      "method": "Naked eye astronomy"
+    },
+    "space_exploration": [
+      "Mariner 2 (first successful flyby, 1962)",
+      "Venera landers (Soviet missions, 1970-1985)",
+      "Magellan orbiter (1990-1994)",
+      "Venus Express (2006-2014)",
+      "Akatsuki (Venus Climate Orbiter, 2015-present)"
+    ],
+    "current_interest": [
+      "Atmospheric circulation patterns",
+      "Volcanic activity detection",
+      "Past habitability conditions",
+      "Runaway greenhouse effect study"
+    ]
+  },
+  "fun_facts": [
+    "Venus is Earth's sister planet in size but a hellish world.",
+    "Venus rotates backward (retrograde rotation) compared to most planets.",
+    "A Venusian day is longer than its year.",
+    "Venus has the hottest surface temperature of any planet.",
+    "The atmospheric pressure on Venus is 92 times that of Earth.",
+    "Venus is the brightest planet in our night sky."
+  ],
+  "description_short": "The hottest planet with a toxic atmosphere and backward rotation.",
+  "description_long": "Venus is Earth's closest neighbor and second planet from the Sun. Despite similar size and mass to Earth, Venus has become a hellish world with surface temperatures hot enough to melt lead and atmospheric pressure crushing enough to require special spacecraft. Its thick atmosphere of carbon dioxide with sulfuric acid clouds creates a runaway greenhouse effect. Venus rotates backward relative to its orbit and spins so slowly that a Venusian day is longer than its year. Evidence suggests Venus may have once had oceans and been habitable billions of years ago."
+}

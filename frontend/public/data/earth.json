@@ -1,0 +1,86 @@
+{
+  "id": "earth",
+  "name": "Earth",
+  "type": "Planet",
+  "parent": "Sun",
+  "quick_facts": {
+    "distance_km": 149600000,
+    "radius_km": 6371,
+    "gravity_m_s2": 9.807,
+    "orbital_period_days": 365.25,
+    "rotation_period_hours": 23.93,
+    "mean_temperature_c": 15
+  },
+  "physical_properties": {
+    "mass_kg": "5.972 × 10^24",
+    "density_g_cm3": 5.51,
+    "escape_velocity_km_s": 11.186,
+    "axial_tilt_deg": 23.44,
+    "albedo": 0.306
+  },
+  "orbit": {
+    "semi_major_axis_km": 149598023,
+    "eccentricity": 0.0167,
+    "inclination_deg": 7.155,
+    "orbital_velocity_km_s": 29.78
+  },
+  "surface": {
+    "composition": [
+      "Silicate rocks",
+      "Iron",
+      "Nickel",
+      "Water"
+    ],
+    "major_features": [
+      "Continents",
+      "Oceans",
+      "Mountains",
+      "Deserts",
+      "Polar Ice Caps"
+    ]
+  },
+  "atmosphere": {
+    "composition": [
+      "Nitrogen (78%)",
+      "Oxygen (21%)",
+      "Argon",
+      "Carbon Dioxide",
+      "Trace Gases"
+    ],
+    "layers": [
+      "Troposphere",
+      "Stratosphere",
+      "Mesosphere",
+      "Thermosphere",
+      "Exosphere"
+    ]
+  },
+  "life": {
+    "biosphere": "Supports diverse ecosystems including plants, animals, fungi, and microorganisms",
+    "unique_feature": "Only known planet to harbor life"
+  },
+  "exploration": {
+    "first_observation": {
+      "by": "Ancient civilizations",
+      "method": "Naked eye astronomy"
+    },
+    "space_exploration": [
+      "Earth observation satellites",
+      "International Space Station",
+      "Deep space probes launched from Earth"
+    ],
+    "current_interest": [
+      "Climate Change Monitoring",
+      "Space Tourism",
+      "Planetary Defense"
+    ]
+  },
+  "fun_facts": [
+    "Earth is the only planet not named after a Greek or Roman god.",
+    "About 71% of Earth’s surface is covered by water.",
+    "Earth’s atmosphere protects life by blocking harmful solar radiation.",
+    "The planet’s rotation is gradually slowing down."
+  ],
+  "description_short": "The third planet from the Sun and the only known world to support life.",
+  "description_long": "Earth formed about 4.5 billion years ago and is the fifth largest planet in the Solar System. Its unique combination of liquid water, atmosphere, and magnetic field makes it habitable. The planet’s axial tilt drives seasonal changes, while its dynamic geology shapes continents and oceans. Earth’s biosphere is interconnected, supporting millions of species. Human activity has profoundly altered Earth’s climate and ecosystems, making sustainability a critical challenge for the future."
+}

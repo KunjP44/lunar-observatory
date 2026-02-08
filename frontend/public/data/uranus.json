@@ -1,0 +1,89 @@
+{
+  "id": "uranus",
+  "name": "Uranus",
+  "type": "Planet",
+  "parent": "Sun",
+  "quick_facts": {
+    "distance_km": 2870972200,
+    "radius_km": 25362,
+    "gravity_m_s2": 8.69,
+    "orbital_period_days": 30687,
+    "rotation_period_hours": 17.24,
+    "mean_temperature_c": -195
+  },
+  "physical_properties": {
+    "mass_kg": "8.681 × 10^25",
+    "density_g_cm3": 1.27,
+    "escape_velocity_km_s": 21.3,
+    "axial_tilt_deg": 97.77,
+    "albedo": 0.51
+  },
+  "orbit": {
+    "semi_major_axis_km": 2870972200,
+    "eccentricity": 0.046381,
+    "inclination_deg": 0.772,
+    "orbital_velocity_km_s": 6.80
+  },
+  "surface": {
+    "composition": [
+      "Molecular hydrogen",
+      "Helium",
+      "Water, ammonia, and methane ices (interior)"
+    ],
+    "major_features": [
+      "Ice giant with no solid surface",
+      "Faint ring system",
+      "Extreme axial tilt causing extreme seasons",
+      "Cloud bands and transient storms"
+    ]
+  },
+  "atmosphere": {
+    "composition": [
+      "Hydrogen (~82.5%)",
+      "Helium (~15.2%)",
+      "Methane (~2.3%)",
+      "Trace hydrocarbons"
+    ],
+    "layers": [
+      "Troposphere",
+      "Stratosphere",
+      "Thermosphere",
+      "Exosphere"
+    ]
+  },
+  "moons": {
+    "names": [
+      "Miranda",
+      "Ariel",
+      "Umbriel",
+      "Titania",
+      "Oberon"
+    ],
+    "origin": "Formed in circumplanetary disk; includes captured objects"
+  },
+  "exploration": {
+    "first_observation": {
+      "by": "William Herschel (1781)",
+      "method": "Telescope discovery"
+    },
+    "space_exploration": [
+      "Voyager 2 (flyby, 1986)"
+    ],
+    "current_interest": [
+      "Interior structure and heat transport",
+      "Ring dynamics",
+      "Seasonal and atmospheric changes",
+      "Potential subsurface oceans in moons"
+    ]
+  },
+  "fun_facts": [
+    "Uranus rotates on its side with an axial tilt of about 98°.",
+    "It was the first planet discovered with a telescope.",
+    "Uranus has a faint ring system and many icy moons.",
+    "Seasons on Uranus last ~20 Earth years due to its tilt."
+  ],
+  "description_short": "An ice giant with extreme axial tilt and faint rings.",
+  "description_long": "Uranus is the seventh planet from the Sun and an ice giant composed mainly of hydrogen, helium, and volatile ices. Its extreme axial tilt causes dramatic seasonal variations. Voyager 2 provided the only close-up observations to date, revealing a complex system of rings and moons. Uranus remains a target for future missions to study its interior, atmosphere, rings, and satellite ocean worlds."
+}
+
+  

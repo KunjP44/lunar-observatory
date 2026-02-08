@@ -1,0 +1,70 @@
+{
+    "id": "moon",
+    "name": "Moon",
+    "type": "Natural Satellite",
+    "parent": "Earth",
+    "quick_facts": {
+        "distance_km": 384400,
+        "radius_km": 1737.4,
+        "gravity_m_s2": 1.62,
+        "orbital_period_days": 27.321,
+        "rotation_period_days": 27.321,
+        "mean_temperature_c": -20
+    },
+    "physical_properties": {
+        "mass_kg": "7.342 × 10^22",
+        "density_g_cm3": 3.34,
+        "escape_velocity_km_s": 2.38,
+        "axial_tilt_deg": 6.68,
+        "albedo": 0.12
+    },
+    "orbit": {
+        "semi_major_axis_km": 384400,
+        "eccentricity": 0.0549,
+        "inclination_deg": 5.145,
+        "orbital_velocity_km_s": 1.022
+    },
+    "surface": {
+        "composition": [
+            "Basalt",
+            "Anorthosite",
+            "Regolith"
+        ],
+        "major_features": [
+            "Mare Imbrium",
+            "Tycho Crater",
+            "Oceanus Procellarum",
+            "South Pole–Aitken Basin"
+        ]
+    },
+    "phases": {
+        "new_moon": "Moon is between Earth and Sun",
+        "first_quarter": "Half illuminated, waxing",
+        "full_moon": "Earth between Sun and Moon",
+        "last_quarter": "Half illuminated, waning"
+    },
+    "exploration": {
+        "first_landing": {
+            "mission": "Apollo 11",
+            "year": 1969,
+            "astronauts": [
+                "Neil Armstrong",
+                "Buzz Aldrin"
+            ]
+        },
+        "total_missions": 105,
+        "current_interest": [
+            "Artemis Program",
+            "Permanent Lunar Base",
+            "Water Ice at Poles"
+        ]
+    },
+    "fun_facts": [
+        "The Moon always shows the same face to Earth.",
+        "Moonquakes exist and can last up to 30 minutes.",
+        "Footprints on the Moon can last millions of years.",
+        "The Moon is slowly drifting away from Earth."
+    ],
+    "description_short": "Earth’s only natural satellite and the fifth largest moon in the Solar System.",
+    "description_long": "The Moon plays a crucial role in stabilizing Earth’s axial tilt and driving ocean tides. It formed approximately 4.5 billion years ago, likely from debris resulting from a massive collision between Earth and a Mars-sized body. The Moon has no significant atmosphere, leading to extreme temperature variations and a heavily cratered surface."
+}
