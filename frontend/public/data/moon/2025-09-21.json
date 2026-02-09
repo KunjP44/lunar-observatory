@@ -1,0 +1,22 @@
+{
+  "date": "2025-09-21",
+  "phase": "Amavasya",
+  "phase_angle": 350.73,
+  "illumination": 0.65,
+  "age": 28.77,
+  "paksha": "Krishna",
+  "constellation": "Purva Phalguni (Nakshatra) \u00b7 Simha (Leo)",
+  "distance_km": 394559,
+  "event": null,
+  "solar_eclipse": {
+    "type": "annular",
+    "visible_here": false,
+    "visibility_note": "Not visible from this location",
+    "global_visibility": [
+      "Asia",
+      "Australia & Pacific"
+    ],
+    "jd_max": 2460940.3208380938
+  },
+  "lunar_eclipse": null
+}

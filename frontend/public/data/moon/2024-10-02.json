@@ -1,0 +1,22 @@
+{
+  "date": "2024-10-02",
+  "phase": "Amavasya",
+  "phase_angle": 351.7,
+  "illumination": 0.52,
+  "age": 28.85,
+  "paksha": "Krishna",
+  "constellation": "Uttara Phalguni (Nakshatra) \u00b7 Kanya (Virgo)",
+  "distance_km": 406301,
+  "event": null,
+  "solar_eclipse": {
+    "type": "annular",
+    "visible_here": false,
+    "visibility_note": "Not visible from this location",
+    "global_visibility": [
+      "Americas",
+      "Australia & Pacific"
+    ],
+    "jd_max": 2460586.281297341
+  },
+  "lunar_eclipse": null
+}

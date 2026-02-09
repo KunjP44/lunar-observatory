@@ -1,0 +1,22 @@
+{
+  "date": "2026-08-12",
+  "phase": "Amavasya",
+  "phase_angle": 350.36,
+  "illumination": 0.71,
+  "age": 28.74,
+  "paksha": "Krishna",
+  "constellation": "Pushya (Nakshatra) \u00b7 Karka (Cancer)",
+  "distance_km": 365002,
+  "event": null,
+  "solar_eclipse": {
+    "type": "annular",
+    "visible_here": false,
+    "visibility_note": "Not visible from this location",
+    "global_visibility": [
+      "Asia",
+      "Australia & Pacific"
+    ],
+    "jd_max": 2461265.240248149
+  },
+  "lunar_eclipse": null
+}

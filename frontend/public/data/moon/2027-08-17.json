@@ -1,0 +1,23 @@
+{
+  "date": "2027-08-17",
+  "phase": "Purnima",
+  "phase_angle": 176.89,
+  "illumination": 99.92,
+  "age": 14.51,
+  "paksha": "Shukla",
+  "constellation": "Dhanishta (Nakshatra) \u00b7 Makara (Capricorn)",
+  "distance_km": 405389,
+  "event": "micromoon",
+  "solar_eclipse": null,
+  "lunar_eclipse": {
+    "type": "penumbral",
+    "visible_here": true,
+    "visibility_note": "Visible from this location",
+    "global_visibility": [
+      "Americas",
+      "Europe & Africa",
+      "Asia"
+    ],
+    "jd_max": 2461634.8012923254
+  }
+}

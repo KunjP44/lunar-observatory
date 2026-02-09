@@ -12,8 +12,8 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 print("Script running from:", Path.cwd())
 
-start = date(2026, 2, 1)
-end = date(2026, 4, 30)
+start = date(2024, 1, 1)
+end = date(2027, 12, 31)
 
 d = start
 while d <= end:
@@ -22,22 +22,18 @@ while d <= end:
 
     payload = {
         "date": d.isoformat(),
-        # 🌙 Phase
         "phase": data["phase_name"],
         "phase_angle": round((data["moon_age_days"] / 29.530588) * 360.0, 2),
         "illumination": data["phase_percent"],
         "age": data["moon_age_days"],
-        # 🕉 Panchang
         "paksha": data["paksha"],
         "constellation": data["constellation"],
-        # 🔭 Physics
         "distance_km": data["distance_km"],
-        # extras (safe to keep)
         "event": data["event"],
         "solar_eclipse": data["solar_eclipse"],
         "lunar_eclipse": data["lunar_eclipse"],
     }
-              
+
     with open(OUT_DIR / f"{d.isoformat()}.json", "w") as f:
         json.dump(payload, f, indent=2)
 

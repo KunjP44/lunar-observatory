@@ -1,6 +1,6 @@
 {
     "name": "Lunar Observatory",
-    "short_name": "LunarObs",
+    "short_name": "Lunar Observatory",
     "description": "Interactive Sun–Earth–Moon simulation and lunar observatory web app",
     "start_url": "../index.html",
     "scope": "../",

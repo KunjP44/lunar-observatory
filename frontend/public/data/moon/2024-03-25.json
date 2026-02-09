@@ -1,0 +1,22 @@
+{
+  "date": "2024-03-25",
+  "phase": "Purnima",
+  "phase_angle": 177.01,
+  "illumination": 99.93,
+  "age": 14.52,
+  "paksha": "Shukla",
+  "constellation": "Uttara Phalguni (Nakshatra) \u00b7 Kanya (Virgo)",
+  "distance_km": 405665,
+  "event": "micromoon",
+  "solar_eclipse": null,
+  "lunar_eclipse": {
+    "type": "penumbral",
+    "visible_here": true,
+    "visibility_note": "Visible from this location",
+    "global_visibility": [
+      "Americas",
+      "Australia & Pacific"
+    ],
+    "jd_max": 2460394.800615769
+  }
+}

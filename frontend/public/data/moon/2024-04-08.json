@@ -1,0 +1,23 @@
+{
+  "date": "2024-04-08",
+  "phase": "Amavasya",
+  "phase_angle": 349.51,
+  "illumination": 0.83,
+  "age": 28.67,
+  "paksha": "Krishna",
+  "constellation": "Uttara Bhadrapada (Nakshatra) \u00b7 Meena (Pisces)",
+  "distance_km": 358914,
+  "event": null,
+  "solar_eclipse": {
+    "type": "annular",
+    "visible_here": false,
+    "visibility_note": "Not visible from this location",
+    "global_visibility": [
+      "Americas",
+      "Europe & Africa",
+      "Asia"
+    ],
+    "jd_max": 2460409.262079681
+  },
+  "lunar_eclipse": null
+}

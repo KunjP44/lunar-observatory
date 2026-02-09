@@ -1,0 +1,23 @@
+{
+  "date": "2024-09-18",
+  "phase": "Purnima",
+  "phase_angle": 178.72,
+  "illumination": 99.99,
+  "age": 14.66,
+  "paksha": "Shukla",
+  "constellation": "Purva Bhadrapada (Nakshatra) \u00b7 Meena (Pisces)",
+  "distance_km": 357570,
+  "event": "supermoon",
+  "solar_eclipse": null,
+  "lunar_eclipse": {
+    "type": "partial",
+    "visible_here": true,
+    "visibility_note": "Visible from this location",
+    "global_visibility": [
+      "Americas",
+      "Europe & Africa",
+      "Asia"
+    ],
+    "jd_max": 2460571.614090285
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "date": "2026-08-28",
+  "phase": "Purnima",
+  "phase_angle": 178.11,
+  "illumination": 99.97,
+  "age": 14.61,
+  "paksha": "Shukla",
+  "constellation": "Shatabhisha (Nakshatra) \u00b7 Kumbha (Aqarius)",
+  "distance_km": 390976,
+  "event": null,
+  "solar_eclipse": null,
+  "lunar_eclipse": {
+    "type": "partial",
+    "visible_here": true,
+    "visibility_note": "Visible from this location",
+    "global_visibility": [
+      "Americas",
+      "Europe & Africa",
+      "Asia"
+    ],
+    "jd_max": 2461280.6756752203
+  }
+}

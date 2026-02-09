@@ -1,0 +1,23 @@
+{
+  "date": "2025-03-29",
+  "phase": "Amavasya",
+  "phase_angle": 353.9,
+  "illumination": 0.29,
+  "age": 29.03,
+  "paksha": "Krishna",
+  "constellation": "Uttara Bhadrapada (Nakshatra) \u00b7 Meena (Pisces)",
+  "distance_km": 359503,
+  "event": null,
+  "solar_eclipse": {
+    "type": "annular",
+    "visible_here": false,
+    "visibility_note": "Not visible from this location",
+    "global_visibility": [
+      "Americas",
+      "Europe & Africa",
+      "Asia"
+    ],
+    "jd_max": 2460763.949613581
+  },
+  "lunar_eclipse": null
+}

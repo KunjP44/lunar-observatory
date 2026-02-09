@@ -1,0 +1,22 @@
+{
+  "date": "2027-08-02",
+  "phase": "Amavasya",
+  "phase_angle": 354.26,
+  "illumination": 0.25,
+  "age": 29.06,
+  "paksha": "Krishna",
+  "constellation": "Pushya (Nakshatra) \u00b7 Karka (Cancer)",
+  "distance_km": 357417,
+  "event": null,
+  "solar_eclipse": {
+    "type": "annular",
+    "visible_here": false,
+    "visibility_note": "Not visible from this location",
+    "global_visibility": [
+      "Asia",
+      "Australia & Pacific"
+    ],
+    "jd_max": 2461619.921294524
+  },
+  "lunar_eclipse": null
+}
