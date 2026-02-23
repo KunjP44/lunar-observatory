@@ -2,12 +2,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Body
 
-from moon.calendar import get_ui_moon_data
-from solar.router import router as solar_router
-from events.router import router as events_router, init_event_cache
-from visibility.router import router as visibility_router
-from push import register_token, send_notification
-from database import init_db
+from backend.moon.calendar import get_ui_moon_data
+from backend.solar.router import router as solar_router
+from backend.events.router import router as events_router, init_event_cache
+from backend.visibility.router import router as visibility_router
+from backend.push import register_token, send_notification
+from backend.database import init_db
 
 api = FastAPI()
 init_db()
