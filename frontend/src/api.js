@@ -5,7 +5,7 @@ const IS_LOCAL =
 
 const API_BASE = IS_LOCAL
     ? "http://127.0.0.1:8000"
-    : "https://lunar-observatory-api.onrender.com";
+    : "https://lunar-observatory.onrender.com";
 
 // ================= 🌕 Moon API =================
 export async function fetchMoonData(date) {

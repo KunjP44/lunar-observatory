@@ -5,7 +5,7 @@ const IS_LOCAL =
 
 const API_BASE = IS_LOCAL
     ? "http://127.0.0.1:8000"
-    : "https://lunar-observatory-api.onrender.com"; // we will deploy here
+    : "https://lunar-observatory.onrender.com"; // we will deploy here
 
 import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
 import { loadInfoCard } from "./infoCard.js";
