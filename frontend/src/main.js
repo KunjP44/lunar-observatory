@@ -3,9 +3,16 @@ const IS_LOCAL =
     location.hostname === "localhost" ||
     location.hostname === "127.0.0.1";
 
+const API_BASE = IS_LOCAL
+    ? "http://127.0.0.1:8000"
+    : "https://lunar-observatory-api.onrender.com"; // we will deploy here
+
 import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
 import { loadInfoCard } from "./infoCard.js";
-import { fetchMoonData } from "./api.js";
+import { fetchMoonData, fetchPlanetPositions } from "./api.js";
+import { initLearnMode } from "./learn.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-messaging.js";
 
 window.addEventListener("error", e => {
     console.error("GLOBAL ERROR:", e.message);
@@ -14,8 +21,8 @@ window.addEventListener("error", e => {
 
 
 // ============================== LOGIC CONTROLLER ==============================
-let targetPhaseAngle = 0;     // from backend (degrees)
-let visualPhaseAngle = 0;     // smoothed (degrees)
+let targetPhaseAngle = 0; // from backend (degrees)
+let visualPhaseAngle = 0; // smoothed (degrees)
 const PHASE_LERP_SPEED = 0.05;
 // ============================== LOGIC CONTROLLER ==============================
 function updateMoonCards(data) {
@@ -52,16 +59,15 @@ function updateMoonCards(data) {
 }
 // ================= SIMULATION TIME ================= 
 // Date Logic
-let realToday = new Date();          // today, never auto-advances
-let simDate = new Date(realToday);  // simulation clock  
+let realToday = new Date(); // today, never auto-advances
+let simDate = new Date(realToday); // simulation clock  
 const BACKEND_SYNC_MS = 60 * 1000; // sync every 1 simulated minute
 let lastBackendSyncMs = 0;
 const dateInput = document.getElementById("date-input");
-let timeScale = 1;           // required by animation loop
-let isTimePaused = false;
 let currentDate = new Date(); // UI reference date
-const MS_PER_REAL_SECOND = 1000;      // real milliseconds
-const MS_PER_SIM_SECOND = 1000;       // 1× = real-time
+const MS_PER_REAL_SECOND = 1000; // real milliseconds
+const MS_PER_SIM_SECOND = 1000;  // 1× = real-time
+
 
 async function loadMoonForDate(dateObj) {
     try {
@@ -90,20 +96,56 @@ document.getElementById("cancel-date").onclick = () => {
 document.getElementById("apply-date").onclick = async () => {
     if (!dateInput.value) return;
 
-    // dateInput.value is already "YYYY-MM-DD"
+    // 🛑 FREEZE SIMULATION IMMEDIATELY
+    isTimePaused = true;
+    isTimeTraveling = false;
 
-    // Force midnight UTC to avoid timezone drift
-    const selected = dateInput.value; // "2026-02-09" or "02/09/2026"
-
-    // FORCE ISO FORMAT (YYYY-MM-DD)
-    const isoDate = new Date(selected).toISOString().slice(0, 10);
-
-    await loadMoonForDate(new Date(isoDate));
+    const selected = dateInput.value;
+    const newDate = new Date(selected);
 
     document.getElementById("date-picker").classList.add("hidden");
     document.getElementById("date-display").classList.remove("hidden");
+
+    // SNAP DATE
+    simDate = new Date(newDate);
+    currentDate = new Date(newDate);
+
+    // FORCE BACKEND UPDATE
+    await loadMoonForDate(newDate);
+    await loadSolarForDate(newDate);
+    await loadPlanetVisibilityForDate(newDate);
+
+    updateDateDisplay();
+
+    // Optional: Resume simulation
+    isTimePaused = false;
 };
 
+function startTimeTravelAnimation(diffMs) {
+    isTimeTraveling = true;
+    travelStartTime = clock.getElapsedTime();
+    isTimePaused = true;
+
+    // STORE START + END TIMES
+    travelStartDate = new Date(simDate);
+    travelEndDate = new Date(simDate.getTime() + diffMs);
+
+    const MS_IN_YEAR = 3.15576e10;
+
+    for (const name in PLANETS) {
+        const p = PLANETS[name];
+
+        travelStartAngles[name] = planetAngles[name] || 0;
+
+        const addedAngle =
+            (diffMs / MS_IN_YEAR) *
+            (Math.PI * 2) /
+            p.period;
+
+        travelTargetAngles[name] =
+            travelStartAngles[name] + addedAngle;
+    }
+}
 
 
 
@@ -155,12 +197,20 @@ const lunarFrameOffset = new THREE.Vector3();
 const MOON_BASE_SCALE = 2.5;
 
 
+const TIME_TRAVEL_THRESHOLD_DAYS = 7;
+const TIME_TRAVEL_DURATION = 5.0; // Seconds the animation takes
+let isTimeTraveling = false;
+let travelStartTime = 0;
+let travelStartAngles = {};
+let travelTargetAngles = {};
+let travelStartDate;
+let travelEndDate;
+let timeScale = 1; // required by animation loop
+let isTimePaused = false;
+
 /* =====================================================
 LIGHTING
 ===================================================== */
-
-// ============ Lighting for differen scenarious ===========
-// ================= LIGHTING PRESETS =================
 const SOLAR_LIGHTING = {
     ambient: 0.35,
     sun: 18,
@@ -176,8 +226,8 @@ const ambient = new THREE.AmbientLight(0xffffff, SOLAR_LIGHTING.ambient);
 scene.add(ambient);
 
 const hemi = new THREE.HemisphereLight(
-    0xffffff,   // sky
-    0x222233,   // ground
+    0xffffff,   // sky
+    0x222233,   // ground
     0.6
 );
 scene.add(hemi);
@@ -215,15 +265,17 @@ const tex = (f) => {
 };
 
 const PLANETS = {
-    Mercury: { a: 0.387, e: 0.205, w: 77.46, period: 0.241 },
-    Venus: { a: 0.723, e: 0.007, w: 131.57, period: 0.615 },
-    Earth: { a: 1.000, e: 0.017, w: 102.94, period: 1.0 },
-    Mars: { a: 1.524, e: 0.093, w: 336.04, period: 1.881 },
-    Jupiter: { a: 5.203, e: 0.049, w: 14.75, period: 11.86 },
-    Saturn: { a: 9.537, e: 0.054, w: 92.43, period: 29.46 },
-    Uranus: { a: 19.19, e: 0.047, w: 170.96, period: 84.01 },
-    Neptune: { a: 30.07, e: 0.009, w: 44.97, period: 164.8 }
+    Mercury: { a: 0.387, e: 0.205, w: 77.46, i: 7.00, period: 0.241, rotationDays: 58.6 },
+    Venus: { a: 0.723, e: 0.007, w: 131.57, i: 3.39, period: 0.615, rotationDays: -243 },
+    Earth: { a: 1.000, e: 0.017, w: 102.94, i: 0.00, period: 1.0, rotationDays: 1 },
+    Mars: { a: 1.524, e: 0.093, w: 336.04, i: 1.85, period: 1.881, rotationDays: 1.03 },
+    Jupiter: { a: 5.203, e: 0.049, w: 14.75, i: 1.30, period: 11.86, rotationDays: 0.41 },
+    Saturn: { a: 9.537, e: 0.054, w: 92.43, i: 2.48, period: 29.46, rotationDays: 0.44 },
+    Uranus: { a: 19.19, e: 0.047, w: 170.96, i: 0.77, period: 84.01, rotationDays: -0.72 },
+    Neptune: { a: 30.07, e: 0.009, w: 44.97, i: 1.77, period: 164.8, rotationDays: 0.67 }
 };
+
+
 // ================= MOON ORBIT PARAMS =================
 const MOON_ORBIT = {
     radius: 2.2,
@@ -235,6 +287,8 @@ let moonAngle = Math.random() * Math.PI * 2;
 const planetMeshes = {};
 const planetAngles = {};
 const orbitLines = [];
+let asteroidBelt = null;
+let kuiperBelt = null;
 
 const sun = new THREE.Mesh(
     new THREE.SphereGeometry(22, 64, 64),
@@ -262,9 +316,36 @@ for (const name in PLANETS) {
     scene.add(mesh);
 
     const PLANET_SIZE_SCALE = 4;
+    mesh.userData.baseScale = PLANET_SIZE_SCALE;
     mesh.scale.setScalar(PLANET_SIZE_SCALE);
     // mesh.scale.multiplyScalar(2.5);
     planetMeshes[name] = mesh;
+    // ================= SATURN RINGS =================
+    if (name === "Saturn") {
+
+        const ringTexture = tex("saturn-ring.png");
+
+        const ringGeometry = new THREE.RingGeometry(2, 3, 128);
+
+        const ringMaterial = new THREE.MeshStandardMaterial({
+            map: ringTexture,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.9,
+            depthWrite: false
+        });
+
+        const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+
+        // Rotate to lie flat in planet equator plane
+        ring.rotation.x = Math.PI / 2;
+
+        // Slight tilt (Saturn axial tilt ~26.7°)
+        ring.rotation.z = THREE.MathUtils.degToRad(26.7);
+
+        mesh.add(ring);
+        ringGeometry.attributes.uv.needsUpdate = true;
+    }
     planetAngles[name] = Math.random() * Math.PI * 2;
     if (name === "Earth") {
         const moon = new THREE.Mesh(
@@ -284,36 +365,83 @@ for (const name in PLANETS) {
         planetMeshes.moon = moon;
     }
     const { a, e } = PLANETS[name];
-    const orbit = createCircularOrbit(p.a);
+    // const orbit = createCircularOrbit(p.a);
+    const orbit = createEllipticalOrbit(p);
     scene.add(orbit);
     orbitLines.push(orbit);
 }
+asteroidBelt = createAsteroidBelt();
+kuiperBelt = createKuiperBelt();
 
+// ================= NEW UI LOGIC =================
+
+// 1. Open Picker
+document.getElementById("btn-date-trigger")?.addEventListener("click", () => {
+    const picker = document.getElementById("solar-date-picker");
+    const input = document.getElementById("solar-date-input");
+    picker.classList.remove("hidden");
+    input.value = simDate.toISOString().slice(0, 10);
+});
+
+// 2. Cancel
+document.getElementById("solar-cancel-date")?.addEventListener("click", () => {
+    document.getElementById("solar-date-picker").classList.add("hidden");
+});
+
+// 3. Apply (Warp)
+document.getElementById("solar-apply-date")?.addEventListener("click", async () => {
+    const input = document.getElementById("solar-date-input");
+    if (!input.value) return;
+
+    // 🛑 Stop normal ticking
+    isTimePaused = true;
+    isTimeTraveling = false;
+
+    const newDate = new Date(input.value);
+    const diffMs = newDate - simDate;
+    const diffDays = Math.abs(diffMs / (1000 * 60 * 60 * 24));
+
+    document.getElementById("solar-date-picker").classList.add("hidden");
+
+    if (diffDays > TIME_TRAVEL_THRESHOLD_DAYS) {
+
+        // 🚀 Let time travel system control pause/resume
+        startTimeTravelAnimation(diffMs);
+
+        simDate = new Date(newDate);
+        currentDate = new Date(newDate);
+        updateDateDisplay();
+    } else {
+
+        // ⚡ Instant Snap
+        simDate = new Date(newDate);
+        currentDate = new Date(newDate);
+
+        await loadMoonForDate(newDate);
+        await loadSolarForDate(newDate);
+
+        updateDateDisplay();
+
+        // ▶️ Resume only for snap case
+        isTimePaused = false;
+    }
+});
+
+function updateDateDisplay() {
+    const label = document.getElementById("solar-date-label");
+    if (label) {
+        label.textContent = simDate.toLocaleDateString("en-US", {
+            month: "short", day: "numeric", year: "numeric"
+        });
+    }
+}
+
+const planetList = document.getElementById("planet-visibility-list");
 const infoCard = document.getElementById("info-card");
 if (infoCard) infoCard.addEventListener("wheel", (e) => e.stopPropagation(), { passive: true });
 Object.values(planetMeshes).forEach(m => m.visible = true);
 
-// ================= TIME CONTROL (DISCRETE STEPS) =================
-const TIME_STEPS = [
-    { label: "Paused", scale: 0 },
-    { label: "1×", scale: 1 },
-    { label: "5×", scale: 500 },
-    { label: "10×", scale: 1000 },
-    { label: "50×", scale: 5000 },
-    { label: "100×", scale: 10000 },
-    { label: "Fast", scale: 50000 },
-    { label: "Warp", scale: 200000 },
-];
-
-let timeIndex = 1; // starts at 1×
-
 const timeLabel = document.getElementById("time-label");
-
-function updateTime() {
-    timeScale = TIME_STEPS[timeIndex].scale;
-    timeLabel.textContent = TIME_STEPS[timeIndex].label;
-    isTimePaused = timeScale === 0;
-}
 function realignMoonPhaseImmediately() {
     if (!planetMeshes.moon) return;
 
@@ -333,7 +461,6 @@ function realignMoonPhaseImmediately() {
     lunarSpotlight.target.updateMatrixWorld();
 }
 
-
 async function resetSimulationToNow() {
     // 1. Reset clocks
     const now = new Date();
@@ -341,50 +468,42 @@ async function resetSimulationToNow() {
     simDate = new Date(now);
     currentDate = new Date(now);
 
-    // 2. Reset time scale to 1×
-    timeIndex = 1;
-    updateTime();
+    // 2. Reset Physics (Fixed: No more timeIndex)
+    timeScale = 1;        // Default to Real Time
+    isTimePaused = false;
+    isTimeTraveling = false;
 
-    // 3. Reset backend sync timer
+    // 3. Reset Backend Sync
     lastBackendSyncMs = 0;
 
-    // 4. Reset Moon rotation + phase (PART 2 explains this)
-    // 4. Reset Moon orientation (but NOT light!)
+    // 4. Reset Moon Visuals
     if (planetMeshes.moon) {
         planetMeshes.moon.rotation.set(0, 0, 0);
     }
-
-    // Reset phase smoothly but realign lighting immediately
     visualPhaseAngle = targetPhaseAngle;
     realignMoonPhaseImmediately();
 
-
-    // 5. Fetch authoritative solar positions for NOW
+    // 5. Force backend updates for everything
+    await loadMoonForDate(simDate);
     await loadSolarForDate(simDate);
+    await loadPlanetVisibilityForDate(simDate);
 
-    // 6. Update UI date immediately
-    const solarDateEl = document.getElementById("solar-date");
-    if (solarDateEl) {
-        solarDateEl.textContent = simDate.toDateString();
-    }
+    // 6. Immediately realign phase lighting
+    realignMoonPhaseImmediately();
+
+    // 7. Update UI
+    updateDateDisplay();
 
     console.log("✅ Reset to current date & time:", simDate.toString());
 }
+const solarDateBtn = document.getElementById("solar-date-btn");
+const solarDatePicker = document.getElementById("solar-date-picker");
+const solarDateInput = document.getElementById("solar-date-input");
 
-
-
-document.getElementById("time-up").onclick = () => {
-    timeIndex = Math.min(timeIndex + 1, TIME_STEPS.length - 1);
-    updateTime();
-};
-
-document.getElementById("time-down").onclick = () => {
-    timeIndex = Math.max(timeIndex - 1, 0);
-    updateTime();
-};
-
-// initialize
-updateTime();
+solarDateBtn?.addEventListener("click", () => {
+    solarDatePicker.classList.remove("hidden");
+    solarDateInput.valueAsDate = simDate;
+});
 
 /* =====================================================
 INPUT HANDLING (FIXED ROTATION & DOUBLE CLICK)
@@ -507,14 +626,21 @@ canvas.addEventListener("dblclick", (e) => {
 
 
 window.addEventListener("wheel", (e) => {
+
+    // STOP camera zoom if events panel is open
+    if (eventsPanel.classList.contains("show")) return;
+
     if (uiPage === "lunar") return;
+
     targetRadius *= 1 + e.deltaY * 0.001;
+
     const min = cameraMode === "focus" ? focusMinRadius : DEFAULT_MIN_RADIUS;
     const max = cameraMode === "focus" ? focusMaxRadius : DEFAULT_MAX_RADIUS;
+
     targetRadius = THREE.MathUtils.clamp(targetRadius, min, max);
 });
 
-//  ====================== touch controls =====================
+//  ====================== touch controls =====================
 /* =====================================================
     MOBILE TOUCH HANDLING (New)
 ===================================================== */
@@ -662,32 +788,12 @@ function updateModeButtons(activeId) {
     document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.toggle('active', btn.id === activeId));
 }
 
-const lunarBtn = document.getElementById("lunar-mode-btn");
-if (lunarBtn) {
-    lunarBtn.addEventListener("click", () => {
-        if (uiPage === "lunar") return;
-        uiPage = "lunar";
-        cameraMode = "lunar";
-        updateModeButtons("lunar-mode-btn");
-        enterLunarScene();
-        document.getElementById("env-gradient").classList.add("lunar");
-        // document.getElementById("page-transition").classList.add("active");
-        const hint = document.querySelector(".ui-hint");
-        if (hint) hint.style.opacity = 0;
-        setTimeout(() => { const moonMode = document.getElementById("moon-mode"); if (moonMode) moonMode.classList.remove("hidden"); }, 300);
-    });
-}
-
 const solarBtn = document.getElementById("solar-mode-btn");
 if (solarBtn) {
     solarBtn.addEventListener("click", () => {
-        // Force the reset logic
+        exitLearnMode();
         resetToSolar();
-
-        // Ensure button states update
         updateModeButtons("solar-mode-btn");
-
-        // Double check UI Page state
         uiPage = "solar";
     });
 }
@@ -696,23 +802,78 @@ const resetBtn = document.getElementById("reset-view");
 if (resetBtn) {
     resetBtn.addEventListener("click", async () => {
 
-        // Pause time briefly (visual clarity)
+        // If in Learn mode → exit learn
+        if (uiPage === "learn") {
+            exitLearnMode();
+            resetToSolar();
+            updateModeButtons("solar-mode-btn");
+            return;
+        }
+
+        // If in Lunar mode → exit lunar only
+        if (uiPage === "lunar") {
+            resetToSolar();
+            updateModeButtons("solar-mode-btn");
+            return;
+        }
+
+        // If focused → just exit focus
+        if (cameraMode === "focus") {
+            exitFocus();
+            return;
+        }
+
+        // Otherwise → full reset
         isTimePaused = true;
-
-        // Reset camera + UI
-        resetToSolar();
-        updateModeButtons("solar-mode-btn");
-
-        // Reset simulation state
         await resetSimulationToNow();
-
-        // Resume time
+        smoothResetCamera();
         isTimePaused = false;
     });
 }
 
+const learningBtn = document.getElementById("learning-mode-btn");
 
+if (learningBtn) {
+    learningBtn.addEventListener("click", () => {
 
+        if (uiPage === "learn") return;
+
+        // If coming from Lunar → exit properly
+        if (uiPage === "lunar") {
+            resetToSolar();
+        }
+
+        uiPage = "learn";
+        cameraMode = "learn";
+
+        updateModeButtons("learning-mode-btn");
+
+        document.getElementById("learn-mode")?.classList.remove("hidden");
+        document.getElementById("moon-mode")?.classList.add("hidden");
+
+        renderer.domElement.style.display = "none";
+
+        document.body.classList.add("learn-active");
+
+        updateResetButton("learn");
+        initLearnMode();
+    });
+}
+function exitLearnMode() {
+
+    const learnMode = document.getElementById("learn-mode");
+    if (learnMode) learnMode.classList.add("hidden");
+
+    document.body.classList.remove("learn-active");
+
+    renderer.domElement.style.display = "block";
+
+    cameraMode = "default";
+    uiPage = "solar";
+
+    updateModeButtons("solar-mode-btn");
+    updateResetButton("solar");
+}
 function resetToSolar() {
     console.log("RESET TO SOLAR");
 
@@ -734,13 +895,42 @@ function resetToSolar() {
 
     // 4. Reset Camera & 3D Scene
     updateResetButton("solar");
-    exitLunarScene();     // Moves moon back to Earth
-    exitFocus();          // Clears focus target
-    smoothResetCamera();  // Resets camera angle
+    exitLunarScene();  // Moves moon back to Earth
+    exitFocus(); // Clears focus target
+    smoothResetCamera(); // Resets camera angle
 
     // 5. Restore Solar UI Hints
     const hint = document.querySelector(".ui-hint");
-    if (hint) hint.style.opacity = 1;
+    if (hint && uiPage === "solar") {
+        hint.style.opacity = 1;
+    }
+}
+
+const lunarBtn = document.getElementById("lunar-mode-btn");
+
+if (lunarBtn) {
+    lunarBtn.addEventListener("click", () => {
+
+        if (uiPage === "lunar") return;
+
+        // If coming from Learn → exit cleanly
+        if (uiPage === "learn") {
+            exitLearnMode();
+        }
+
+        uiPage = "lunar";
+        cameraMode = "lunar";
+
+        updateModeButtons("lunar-mode-btn");
+
+        renderer.domElement.style.display = "block";
+
+        enterLunarScene();
+
+        document.getElementById("env-gradient")?.classList.add("lunar");
+
+        updateResetButton("lunar");
+    });
 }
 
 
@@ -748,6 +938,8 @@ function setSystemVisibility(visible) {
     planetMeshes.sun.visible = visible;
     for (const name in PLANETS) planetMeshes[name].visible = visible;
     orbitLines.forEach(o => o.visible = visible);
+    if (asteroidBelt) asteroidBelt.visible = visible;
+    if (kuiperBelt) kuiperBelt.visible = visible;
 }
 
 function focusOn(obj) {
@@ -878,8 +1070,8 @@ function applySolarLighting() {
     lunarSpotlight.visible = false;
 }
 function applyLunarLighting() {
-    ambient.intensity = 0.05;   // almost zero
-    hemi.intensity = 0;         // IMPORTANT
+    ambient.intensity = 0.05;   // almost zero
+    hemi.intensity = 0;         // IMPORTANT
     sunLight.intensity = 0;
     lunarSpotlight.visible = true;
 }
@@ -909,6 +1101,7 @@ function enterLunarScene() {
     planetMeshes.moon.material.opacity = 0;
 
     document.body.classList.add("lunar-active");
+    document.getElementById("moon-mode")?.classList.remove("hidden");
     lunarIntro = true;
     lunarIntroProgress = 0;
     cameraMode = "lunar";
@@ -917,6 +1110,7 @@ function enterLunarScene() {
     document.body.classList.remove("focused");
     updateResetButton("lunar");
     applyLunarLighting();
+    loadPlanetVisibilityForDate(simDate);
 
     targetTheta = Math.PI / 2;
     targetPhi = Math.PI / 2;
@@ -962,8 +1156,14 @@ function exitLunarScene() {
 /* =====================================================
 ANIMATION LOOP
 ===================================================== */
+// Variable to track frames for UI throttling
+let frameCount = 0;
+
 function animate() {
     requestAnimationFrame(animate);
+
+    const now = clock.getElapsedTime();
+    const deltaSeconds = clock.getDelta();
 
     // ---------------- CAMERA TARGET ----------------
     if (cameraMode === "focus" && focusObject) {
@@ -973,170 +1173,228 @@ function animate() {
     } else {
         targetPos.set(0, 0, 0);
     }
-    if (
-        cameraMode === "lunar" &&
-        !lunarIntro &&
-        !isDragging &&
-        (!isMobile || !sheetExpanded)
-    ) {
+
+    // ---------------- BACKGROUND EFFECTS ----------------
+    if (planetMeshes.sun) {
+        planetMeshes.sun.material.emissiveIntensity = 0.35 + Math.sin(now * 2) * 0.1;
+        sunLight.position.copy(planetMeshes.sun.position);
+    }
+
+    // Moon Idle Spin (Visual only)
+    if (cameraMode === "lunar" && !lunarIntro && !isDragging && (!isMobile || !sheetExpanded)) {
         planetMeshes.moon.rotation.y += 0.0004;
     }
 
-
-    sunLight.position.copy(sun.position);
-    sun.material.emissiveIntensity =
-        0.35 + Math.sin(performance.now() * 0.001) * 0.1;
-    // ---------------- SIMULATION CLOCK ----------------
-    // const deltaSeconds = clock.getDelta();
-    const deltaSeconds = clock.getDelta();
-
+    // =========================================================
+    //  STEP 1: CALCULATE ANGLES (PHYSICS ENGINE)
+    // =========================================================
     let deltaSimMs = 0;
+    const MS_IN_YEAR = 3.15576e10;
 
-    // ... inside animate() ...
+    if (isTimeTraveling) {
+        // --- MODE A: TIME TRAVEL (Whoosh Effect) ---
+        const elapsed = now - travelStartTime;
+        let progress = elapsed / TIME_TRAVEL_DURATION;
 
-    if (!isTimePaused && timeScale > 0) {
-        deltaSimMs = deltaSeconds * MS_PER_SIM_SECOND * timeScale;
-        simDate = new Date(simDate.getTime() + deltaSimMs);
+        if (progress >= 1) {
+            progress = 1;
+            isTimeTraveling = false;
+            isTimePaused = false;
 
-        // --- NEW: ANIMATE PLANETS LOCALLY ---
-        // 1 Year in ms = 365.25 * 24 * 60 * 60 * 1000 ≈ 3.15576e10
-        const MS_IN_YEAR = 3.15576e10;
+            loadSolarForDate(simDate);
+            loadMoonForDate(simDate);
 
-        // If we are in Solar view, move the planets
-        if (uiPage === "solar" && cameraMode !== "lunar") {
-            for (const name in PLANETS) {
-                const p = PLANETS[name];
-                const mesh = planetMeshes[name];
-
-                if (mesh && planetAngles[name] !== undefined) {
-                    // Calculate angle change based on orbital period
-                    // fast planets (low period) move more, slow planets (high period) move less
-                    const angleChange = (deltaSimMs / MS_IN_YEAR) * (Math.PI * 2) / p.period;
-
-                    planetAngles[name] += angleChange;
-
-                    // Update Position using your existing orbit logic
-                    const r = mapDistanceAU(p.a);
-                    const theta = planetAngles[name];
-
-                    mesh.position.set(
-                        r * Math.cos(theta),
-                        0,
-                        r * Math.sin(theta)
-                    );
-                }
+            if (cameraMode === "lunar") {
+                loadPlanetVisibilityForDate(simDate);
             }
         }
-        // ---------------- MOON ORBIT AROUND EARTH ----------------
-        if (
-            planetMeshes.moon &&
-            planetMeshes.Earth &&
-            uiPage === "solar" &&
-            cameraMode !== "lunar"
-        ) {
+
+        const ease = progress < 0.5
+            ? 4 * progress * progress * progress
+            : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+        // Visual Date Update
+        const interpolated = travelStartDate.getTime() +
+            (travelEndDate.getTime() - travelStartDate.getTime()) * ease;
+        simDate = new Date(interpolated);
+
+        // Update UI immediately during travel for smooth visual
+        updateDateDisplay();
+
+        // Interpolate Angles
+        for (const name in PLANETS) {
+            const p = PLANETS[name];
+            const mesh = planetMeshes[name];
+
+            if (travelStartAngles[name] !== undefined && travelTargetAngles[name] !== undefined) {
+                planetAngles[name] = THREE.MathUtils.lerp(
+                    travelStartAngles[name],
+                    travelTargetAngles[name],
+                    ease
+                );
+            }
+            // Visual spin blur
+            if (mesh && p.rotationDays) mesh.rotation.y += 0.05 * (1 + ease * 2);
+        }
+
+    } else if (!isTimePaused) {
+        // --- MODE B: REAL TIME CLOCK ---
+        // 1 Real Second = 1 Simulation Second (1000ms)
+        deltaSimMs = deltaSeconds * 1000;
+        simDate = new Date(simDate.getTime() + deltaSimMs);
+
+        for (const name in PLANETS) {
+            const p = PLANETS[name];
+            const mesh = planetMeshes[name];
+
+            // 1. ADVANCE ORBIT (Revolution)
+            if (planetAngles[name] !== undefined) {
+                const angleChange = (deltaSimMs / MS_IN_YEAR) * (Math.PI * 2) / p.period;
+                planetAngles[name] += angleChange;
+            }
+
+            // 2. ADVANCE SPIN (Rotation)
+            const MS_IN_DAY = 24 * 60 * 60 * 1000;
+            if (mesh && p.rotationDays) {
+                const rotationSpeed = (deltaSimMs / (p.rotationDays * MS_IN_DAY)) * Math.PI * 2;
+                mesh.rotation.y += rotationSpeed;
+            }
+        }
+    }
+
+    // =========================================================
+    //  STEP 2: APPLY POSITIONS (RENDERING)
+    // =========================================================
+
+    // 1. PLANETS (Elliptical Orbits + Inclination)
+    if (uiPage === "solar" && cameraMode !== "lunar") {
+        for (const name in PLANETS) {
+            const p = PLANETS[name];
+            const mesh = planetMeshes[name];
+            if (!mesh || planetAngles[name] === undefined) continue;
+
+            const theta = planetAngles[name];
+            const { a, e, w, i } = p;
+
+            const r_au = (a * (1 - e * e)) / (1 + e * Math.cos(theta));
+            const r_scene = mapDistanceAU(r_au);
+
+            const x_orb = r_scene * Math.cos(theta);
+            const z_orb = r_scene * Math.sin(theta);
+
+            const omega = THREE.MathUtils.degToRad(w);
+            const x_w = x_orb * Math.cos(omega) - z_orb * Math.sin(omega);
+            const z_w = x_orb * Math.sin(omega) + z_orb * Math.cos(omega);
+
+            const inc = THREE.MathUtils.degToRad(i || 0);
+            const y_final = z_w * Math.sin(inc);
+            const z_final = z_w * Math.cos(inc);
+
+            mesh.position.set(x_w, y_final, z_final);
+        }
+    }
+
+    // 2. MOON ORBIT (Realistic Inclination)
+    if (planetMeshes.moon && planetMeshes.Earth && uiPage === "solar" && cameraMode !== "lunar") {
+
+        // Advance Angle Logic (Only if running normally)
+        if (!isTimeTraveling && !isTimePaused) {
             const MS_IN_DAY = 24 * 60 * 60 * 1000;
             const deltaDays = deltaSimMs / MS_IN_DAY;
-
-            // Advance orbital angle
             moonAngle += (2 * Math.PI / MOON_ORBIT.periodDays) * deltaDays;
-
-            // Moon position relative to Earth
-            planetMeshes.moon.position.set(
-                MOON_ORBIT.radius * Math.cos(moonAngle),
-                0,
-                MOON_ORBIT.radius * Math.sin(moonAngle)
-            );
-
-            // -------- TIDAL LOCKING --------
-            planetMeshes.moon.lookAt(
-                planetMeshes.Earth.position.clone()
-                    .sub(planetMeshes.moon.getWorldPosition(new THREE.Vector3()))
-            );
         }
 
+        const moonR = MOON_ORBIT.radius;
+        const moonInc = THREE.MathUtils.degToRad(5.14);
+
+        const mx = moonR * Math.cos(moonAngle);
+        const mz = moonR * Math.sin(moonAngle);
+        const my = mz * Math.sin(moonInc);
+        const mz_final = mz * Math.cos(moonInc);
+
+        planetMeshes.moon.position.set(mx, my, mz_final);
     }
 
-
-    const solarDateEl = document.getElementById("solar-date");
-
-    if (uiPage === "solar" && solarDateEl) {
-        solarDateEl.textContent = simDate.toDateString();
+    // ---------------- UI & SYNC ----------------
+    // CRITICAL FIX: Throttle UI Updates (1x per 0.5s approx)
+    frameCount++;
+    if (frameCount % 30 === 0 && !isTimeTraveling) {
+        updateDateDisplay();
     }
 
-    // ---------------- BACKEND SYNC ----------------
-    lastBackendSyncMs += deltaSimMs;
-
-    if (lastBackendSyncMs >= BACKEND_SYNC_MS) {
-        lastBackendSyncMs = 0;
-        loadSolarForDate(simDate);
-    }
-
-    // ---------------- MOON INTRO ----------------
-
-    if (cameraMode === "lunar" && lunarIntro) {
-        lunarIntroProgress += 0.02;
-        const t = Math.min(lunarIntroProgress, 1);
-        const ease = 1 - Math.pow(1 - t, 3);
-
-        planetMeshes.moon.material.opacity = ease;
-        planetMeshes.moon.scale.setScalar(MOON_SCALE);
-
-        if (t >= 1) {
-            planetMeshes.moon.material.opacity = 1;
-            lunarIntro = false;
+    // Backend Safety Sync
+    if (!isTimeTraveling) {
+        lastBackendSyncMs += deltaSimMs;
+        if (lastBackendSyncMs >= BACKEND_SYNC_MS) {
+            lastBackendSyncMs = 0;
+            loadSolarForDate(simDate);
         }
     }
 
-    // ---------------- MOON PHASE LIGHTING ----------------
+    // ---------------- LUNAR MODE SPECIFICS ----------------
     if (cameraMode === "lunar") {
-        // Smooth phase transition
-        visualPhaseAngle = THREE.MathUtils.lerp(
-            visualPhaseAngle,
-            targetPhaseAngle,
-            PHASE_LERP_SPEED
-        );
+        if (lunarIntro) {
+            lunarIntroProgress += 0.02;
+            const t = Math.min(lunarIntroProgress, 1);
+            const ease = 1 - Math.pow(1 - t, 3);
+            planetMeshes.moon.material.opacity = ease;
+            planetMeshes.moon.scale.setScalar(MOON_SCALE);
+            if (t >= 1) { planetMeshes.moon.material.opacity = 1; lunarIntro = false; }
+        }
 
+        visualPhaseAngle = THREE.MathUtils.lerp(visualPhaseAngle, targetPhaseAngle, PHASE_LERP_SPEED);
         const rad = THREE.MathUtils.degToRad(visualPhaseAngle - 90);
-
-        // Sun direction relative to Moon
-        const lightDir = new THREE.Vector3(
-            Math.cos(rad),
-            0,
-            Math.sin(rad)
+        lunarSpotlight.position.set(
+            targetPos.x + Math.cos(rad) * 50,
+            targetPos.y,
+            targetPos.z + Math.sin(rad) * 50
         );
-
-        lunarSpotlight.position.copy(lightDir.multiplyScalar(50));
-        lunarSpotlight.target.position.set(0, 0, 0);
+        lunarSpotlight.target.position.copy(targetPos);
         lunarSpotlight.target.updateMatrixWorld();
-    }
-
-    // ---------------- MOON ROTATION ----------------
-    if (cameraMode === "lunar" && !lunarIntro && !isDragging) {
-        planetMeshes.moon.rotation.y += 0.0004;
     }
 
     // ---------------- CAMERA SMOOTHING ----------------
     const lerpFactor = isDragging ? 0.6 : 0.05;
-
     currentTargetPos.lerp(targetPos, lerpFactor);
     currentRadius = THREE.MathUtils.lerp(currentRadius, targetRadius, lerpFactor);
-
-    // NEW: Smoothly interpolate angles
     theta = THREE.MathUtils.lerp(theta, targetTheta, lerpFactor);
     phi = THREE.MathUtils.lerp(phi, targetPhi, lerpFactor);
+    if (cameraMode !== "lunar") phi = THREE.MathUtils.clamp(phi, 0.1, Math.PI - 0.1);
 
-    // Keep clamp for safety (though targets are already clamped)
-    if (cameraMode !== "lunar") {
-        phi = THREE.MathUtils.clamp(phi, 0.1, Math.PI - 0.1);
+    camera.position.set(
+        currentTargetPos.x + currentRadius * Math.sin(phi) * Math.cos(theta),
+        currentTargetPos.y + currentRadius * Math.cos(phi),
+        currentTargetPos.z + currentRadius * Math.sin(phi) * Math.sin(theta)
+    );
+    camera.lookAt(currentTargetPos);
+    // ================= SIZE BOOST SYSTEM =================
+    if (uiPage === "solar" && cameraMode !== "lunar") {
+
+        for (const name in PLANETS) {
+
+            const mesh = planetMeshes[name];
+            if (!mesh) continue;
+
+            const baseScale = mesh.userData.baseScale || 4;
+
+            const distanceToCamera = mesh.position.distanceTo(camera.position);
+
+            // Tune these two numbers for feel
+            const boostFactor = distanceToCamera / 500; // change this number to scale the planets when zooming out lower is larger radius
+            const clampedBoost = THREE.MathUtils.clamp(boostFactor, 1, 3);
+
+            const finalScale = baseScale * clampedBoost;
+
+            mesh.scale.setScalar(finalScale);
+        }
     }
 
-    const x = currentTargetPos.x + currentRadius * Math.sin(phi) * Math.cos(theta);
-    const y = currentTargetPos.y + currentRadius * Math.cos(phi);
-    const z = currentTargetPos.z + currentRadius * Math.sin(phi) * Math.sin(theta);
-
-    camera.position.set(x, y, z);
-    camera.lookAt(currentTargetPos);
-
+    if (asteroidBelt) {
+        asteroidBelt.rotation.y += 0.0002;
+    }
+    if (kuiperBelt) {
+        kuiperBelt.rotation.y += 0.00005; // much slower
+    }
     renderer.render(scene, camera);
 }
 animate();
@@ -1197,47 +1455,527 @@ function createCircularOrbit(aAU) {
     return new THREE.LineLoop(geometry, material);
 }
 
+function createEllipticalOrbit(planet) {
+    const points = [];
+    const segments = 256;
+
+    const { a, e, w } = planet;
+    const omega = THREE.MathUtils.degToRad(w);
+
+    for (let i = 0; i <= segments; i++) {
+        const theta = (i / segments) * Math.PI * 2;
+
+        const r = (a * (1 - e * e)) / (1 + e * Math.cos(theta));
+        const scaled = mapDistanceAU(r);
+
+        const x = scaled * Math.cos(theta);
+        const z = scaled * Math.sin(theta);
+
+        const rotatedX = x * Math.cos(omega) - z * Math.sin(omega);
+        const rotatedZ = x * Math.sin(omega) + z * Math.cos(omega);
+
+        const inc = THREE.MathUtils.degToRad(planet.i || 0);
+        const y = rotatedZ * Math.sin(inc);
+        const finalZ = rotatedZ * Math.cos(inc);
+
+        points.push(new THREE.Vector3(rotatedX, y, finalZ));
+
+    }
+
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const material = new THREE.LineBasicMaterial({
+        color: 0xffffff,
+        opacity: 0.25,
+        transparent: true
+    });
+
+    return new THREE.LineLoop(geometry, material);
+}
+
+// =====================================================
+// ASTEROID BELT
+// =====================================================
+function createAsteroidBelt() {
+
+    const asteroidCount = 2500;
+
+    const innerAU = 2.2;
+    const outerAU = 3.2;
+
+    const innerRadius = mapDistanceAU(innerAU);
+    const outerRadius = mapDistanceAU(outerAU);
+
+    const thickness = 4; // vertical spread
+
+    const geometry = new THREE.IcosahedronGeometry(0.4, 0);
+
+    const material = new THREE.MeshStandardMaterial({
+        color: 0x999999,
+        roughness: 1,
+        metalness: 0
+    });
+
+    const belt = new THREE.InstancedMesh(
+        geometry,
+        material,
+        asteroidCount
+    );
+
+    const dummy = new THREE.Object3D();
+
+    for (let i = 0; i < asteroidCount; i++) {
+
+        const t = Math.random();
+        const bias = Math.pow(t, 0.5); // denser toward middle
+        const radius = THREE.MathUtils.lerp(innerRadius, outerRadius, bias);
+        const angle = Math.random() * Math.PI * 2;
+
+        const x = radius * Math.cos(angle);
+        const z = radius * Math.sin(angle);
+
+        const y = (Math.random() - 0.5) * thickness;
+
+        dummy.position.set(x, y, z);
+
+        const scale = Math.random() * 0.8 + 0.2;
+        dummy.scale.set(scale, scale, scale);
+
+        dummy.rotation.set(
+            Math.random() * Math.PI,
+            Math.random() * Math.PI,
+            Math.random() * Math.PI
+        );
+
+        material.color.setHSL(0, 0, 0.4 + Math.random() * 0.2);
+        dummy.updateMatrix();
+        belt.setMatrixAt(i, dummy.matrix);
+    }
+
+    scene.add(belt);
+    belt.rotation.x = THREE.MathUtils.degToRad(1.5);
+
+    return belt;
+}
+
+// =====================================================
+// KUIPER BELT
+// =====================================================
+function createKuiperBelt() {
+
+    const objectCount = 4000;
+
+    const innerAU = 35;
+    const outerAU = 55;
+
+    const innerRadius = mapDistanceAU(innerAU);
+    const outerRadius = mapDistanceAU(outerAU);
+
+    const thickness = 15; // much thicker vertically
+
+    const geometry = new THREE.IcosahedronGeometry(1.2, 0);
+
+    const material = new THREE.MeshStandardMaterial({
+        color: 0xbfdfff,
+        roughness: 1,
+        metalness: 0,
+        emissive: 0x223355,
+        emissiveIntensity: 0.3
+    });
+
+    const belt = new THREE.InstancedMesh(
+        geometry,
+        material,
+        objectCount
+    );
+
+    const dummy = new THREE.Object3D();
+
+    for (let i = 0; i < objectCount; i++) {
+
+        const t = Math.random();
+        const bias = Math.pow(t, 0.8); // less dense than asteroid belt
+
+        const radius = THREE.MathUtils.lerp(innerRadius, outerRadius, bias);
+        const angle = Math.random() * Math.PI * 2;
+
+        const x = radius * Math.cos(angle);
+        const z = radius * Math.sin(angle);
+        const y = (Math.random() - 0.5) * thickness;
+
+        dummy.position.set(x, y, z);
+
+        const scale = Math.random() * 2.5 + 0.8;
+        dummy.scale.set(scale, scale, scale);
+
+        dummy.rotation.set(
+            Math.random() * Math.PI,
+            Math.random() * Math.PI,
+            Math.random() * Math.PI
+        );
+
+        dummy.updateMatrix();
+        belt.setMatrixAt(i, dummy.matrix);
+    }
+
+    scene.add(belt);
+
+    // slight tilt
+    belt.rotation.x = THREE.MathUtils.degToRad(3);
+
+    return belt;
+}
+
 
 async function loadSolarForDate(dateObj) {
-    if (!IS_LOCAL) {
-        return;
-    }
 
     try {
         const iso = dateObj.toISOString().slice(0, 10);
-        const res = await fetch(
-            `http://127.0.0.1:8000/api/solar/positions?date=${iso}`
-        );
 
-        if (!res.ok) {
-            console.error("Solar API error:", res.status);
-            return;
-        }
+        const positions = await fetchPlanetPositions(iso);
 
-        const data = await res.json();
-        if (!data.positions) return;
+        if (!positions) return;
 
         if (planetMeshes.sun) planetMeshes.sun.position.set(0, 0, 0);
 
-        for (const name in data.positions) {
+        for (const name in positions) {
             const meshKey = name.charAt(0).toUpperCase() + name.slice(1);
             const mesh = planetMeshes[meshKey];
-            if (!mesh) continue;
+            const p = PLANETS[meshKey];
 
-            const { theta } = data.positions[name];
-            planetAngles[meshKey] = theta;
+            if (!mesh || !p) continue;
 
-            const scaledDist = mapDistanceAU(PLANETS[meshKey].a);
-            mesh.position.set(
-                Math.cos(theta) * scaledDist,
-                0,
-                Math.sin(theta) * scaledDist
-            );
+            const { r, theta } = positions[name];
+
+            // Update local angle so animation continues smoothly
+            if (isTimeTraveling) {
+                travelTargetAngles[meshKey] = theta;
+            } else {
+                planetAngles[meshKey] = theta;
+            }
+
         }
+
     } catch (e) {
         console.error("Solar backend unavailable:", e);
     }
 }
+
+
+/* =====================================================
+   ASTRONOMY INTELLIGENCE LOG
+===================================================== */
+const beacon = document.getElementById("event-beacon");
+const beaconDot = document.querySelector(".beacon-dot");
+const eventsPanel = document.getElementById("events-panel");
+const closeEventsBtn = document.getElementById("close-events");
+const eventsContainer = document.getElementById("events-container");
+const eventsYearLabel = document.getElementById("events-year-label");
+let currentEventsYear = new Date().getFullYear();
+let availableYears = [];
+let cachedEvents = [];
+
+eventsContainer?.addEventListener("wheel", (e) => {
+    e.stopPropagation();
+});
+
+/* -------------------------
+   Open / Close Panel
+-------------------------- */
+
+beacon?.addEventListener("click", () => {
+    // eventsPanel.classList.remove("hidden");
+    eventsPanel.classList.add("show");
+    document.body.classList.add("events-open");
+});
+
+closeEventsBtn?.addEventListener("click", () => {
+    eventsPanel.classList.remove("show");
+    document.body.classList.remove("events-open");
+});
+
+/* -------------------------
+   Beacon Logic
+-------------------------- */
+
+async function updateBeaconState() {
+    try {
+        // const res = await fetch(`/api/events/upcoming?days=3`);
+        const res = await fetch(`${API_BASE}/api/events/upcoming?days=3`);
+        const data = await res.json();
+
+        if (data.has_major_within_3_days) {
+            beaconDot.classList.add("active");
+        } else {
+            beaconDot.classList.remove("active");
+        }
+    } catch (err) {
+        console.error("Beacon error:", err);
+    }
+}
+
+/* -------------------------
+   Load Year Events
+-------------------------- */
+
+async function loadPlanetVisibilityForDate(dateObj) {
+    const iso = dateObj.toISOString().split("T")[0];
+
+    try {
+        planetList.innerHTML =
+            '<div style="text-align:center; padding:20px; opacity:0.5; font-size:12px;">Calibrating sensors...</div>';
+
+        const res = await fetch(`${API_BASE}/api/visibility?date=${iso}`);
+        const data = await res.json();
+
+        renderPlanetVisibility(data);
+    } catch (e) {
+        planetList.innerHTML =
+            '<div style="text-align:center; opacity:0.5;">Signal lost. Check connection.</div>';
+    }
+}
+
+async function loadEventsForYear(year) {
+    try {
+        // const res = await fetch(`/api/events/year/${year}`);
+        const res = await fetch(`${API_BASE}/api/events/year/${year}`)
+        const events = await res.json();
+
+        cachedEvents = events;
+        renderEvents(events);
+
+        renderYearSelector(year);
+
+    } catch (err) {
+        console.error("Events load error:", err);
+    }
+}
+
+/* -------------------------
+   Render Events
+-------------------------- */
+
+function renderEvents(events) {
+    eventsContainer.innerHTML = "";
+
+    if (!events.length) {
+        eventsContainer.innerHTML = `<div style="opacity:0.5">No major events detected.</div>`;
+        return;
+    }
+
+    events.forEach(ev => {
+        const div = document.createElement("div");
+        div.className = "event-item";
+
+        const accent = getAccentColor(ev.type);
+
+        const regions = ev.visibility_regions?.join(" • ") || "—";
+
+        div.innerHTML = `
+            <div class="event-date">${formatDate(ev.date)}</div>
+
+            <div class="event-title"
+                style="border-left: 3px solid ${accent}; padding-left: 12px;">
+                ${ev.title}
+            </div>
+
+            <div class="event-meta">
+                <span class="meta-india ${ev.visible_from_india ? "visible" : "hidden-vis"}">
+                    ${ev.visible_from_india ? "Visible in India" : "Not visible in India"}
+                </span>
+                <div class="meta-global">
+                    ${regions}
+                </div>
+            </div>
+
+            <button class="notify-btn">
+                🔔 Notify Me
+            </button>
+        `;
+
+        eventsContainer.appendChild(div);
+        const notifyBtn = div.querySelector(".notify-btn");
+
+        notifyBtn.addEventListener("click", () => {
+            notifyBtn.classList.toggle("active");
+
+            if (notifyBtn.classList.contains("active")) {
+                notifyBtn.textContent = "✓ Reminder Set";
+            } else {
+                notifyBtn.textContent = "🔔 Notify Me";
+            }
+        });
+    });
+}
+
+function renderYearSelector(activeYear) {
+
+    const now = new Date();
+    const thisYear = now.getFullYear();
+
+    // Rolling 3 year window
+    availableYears = [
+        thisYear,
+        thisYear + 1,
+        thisYear + 2
+    ];
+
+    eventsYearLabel.innerHTML = "";
+
+    availableYears.forEach(year => {
+        const btn = document.createElement("span");
+        btn.className = "year-chip";
+        btn.textContent = year;
+
+        if (year === activeYear) {
+            btn.classList.add("active");
+        }
+
+        btn.addEventListener("click", () => {
+            currentEventsYear = year;
+            loadEventsForYear(year);
+        });
+
+        eventsYearLabel.appendChild(btn);
+    });
+}
+
+/* -------------------------
+   Accent Color Logic
+-------------------------- */
+
+function getAccentColor(type) {
+    switch (type) {
+        case "lunar_eclipse": return "rgba(255,80,80,0.7)";
+        case "solar_eclipse": return "rgba(255,215,120,0.8)";
+        case "supermoon": return "rgba(120,180,255,0.7)";
+        case "planetary_opposition": return "rgba(255,140,0,0.8)";
+        default: return "rgba(255,255,255,0.3)";
+    }
+}
+
+/* -------------------------
+   Date Formatting
+-------------------------- */
+
+function formatDate(dateStr) {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+    }).toUpperCase();
+}
+
+
+/* -------------------------
+   Initialize
+-------------------------- */
+
+updateBeaconState();
+loadEventsForYear(currentEventsYear);
+
+// ================= PLANET VISIBILITY ================
+const moonContent = document.getElementById("moon-content");
+
+// 3. Render Improved Planet Table
+function renderPlanetVisibility(data) {
+    planetList.innerHTML = "";
+
+    Object.entries(data).forEach(([name, info]) => {
+        const row = document.createElement("div");
+        row.className = `planet-row ${info.visibility_rating.toLowerCase()}`;
+
+        // Create the clean "Card/Table" HTML structure
+        row.innerHTML = `
+            <div class="planet-row-header">
+                <span class="planet-name">${capitalize(name)}</span>
+                <span class="planet-rating">${info.visibility_rating}</span>
+            </div>
+            
+            <div class="planet-row-window">
+                <span class="window-label">Best View</span>
+                <span class="window-time">${info.best_view_window || "N/A"}</span>
+            </div>
+
+            <div class="planet-details">
+                <div class="detail-item">
+                    <span class="detail-label">Rise</span>
+                    <span class="detail-value">${info.rise}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Transit</span>
+                    <span class="detail-value">${info.transit}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Set</span>
+                    <span class="detail-value">${info.set}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Altitude</span>
+                    <span class="detail-value">${info.max_altitude}°</span>
+                </div>
+                 <div class="detail-item">
+                    <span class="detail-label">Azimuth</span>
+                    <span class="detail-value">${info.azimuth}°</span>
+                </div>
+                 <div class="detail-item">
+                    <span class="detail-label">Mag</span>
+                    <span class="detail-value">${info.magnitude}</span>
+                </div>
+            </div>
+        `;
+
+        row.addEventListener("click", () => {
+            // Close others if you want accordion style, or just toggle
+            document.querySelectorAll('.planet-row.expanded').forEach(el => {
+                if (el !== row) el.classList.remove('expanded');
+            });
+            row.classList.toggle("expanded");
+        });
+
+        planetList.appendChild(row);
+    });
+}
+
+function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+
+// ================= Notifications UI =================
+
+const notifBtn = document.getElementById("btn-notifications");
+const notifPopup = document.getElementById("notification-popup");
+
+notifBtn.addEventListener("click", () => {
+    notifPopup.classList.toggle("hidden");
+});
+
+// Close if clicked outside
+document.addEventListener("click", (e) => {
+    if (!notifBtn.contains(e.target) && !notifPopup.contains(e.target)) {
+        notifPopup.classList.add("hidden");
+    }
+});
+
+// Enable Daily Morning Brief
+document.getElementById("enable-daily-brief").addEventListener("click", () => {
+    localStorage.setItem("dailyBrief", "true");
+    alert("🌅 Daily Morning Brief Enabled (7 AM IST)");
+});
+
+// Enable Planet Visibility
+document.getElementById("enable-planet-brief").addEventListener("click", () => {
+    localStorage.setItem("planetBrief", "true");
+    alert("🪐 Daily Planet Visibility Enabled");
+});
+
+// Disable All
+document.getElementById("disable-notifications").addEventListener("click", () => {
+    localStorage.removeItem("dailyBrief");
+    localStorage.removeItem("planetBrief");
+    alert("Notifications Disabled");
+});
 
 
 // Init Data
@@ -1259,3 +1997,68 @@ async function loadSolarForDate(dateObj) {
         }
     }
 })();
+
+
+
+// ======== Firebase Notification ==============
+// ---------------- Firebase Push Setup ---------------
+const firebaseConfig = {
+    apiKey: "AIzaSyCcofnDYMVom82NSHwNsT_0oZzhsMiUEEA",
+    authDomain: "lunar-observatory.firebaseapp.com",
+    projectId: "lunar-observatory",
+    storageBucket: "lunar-observatory.firebasestorage.app",
+    messagingSenderId: "379098412161",
+    appId: "1:379098412161:web:0e386d4c2744c058748980"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const messaging = getMessaging(firebaseApp);
+
+async function setupPush() {
+    try {
+        // Prevent repeated registration
+        if (localStorage.getItem("pushRegistered")) {
+            console.log("Push already registered.");
+            return;
+        }
+
+        const permission = await Notification.requestPermission();
+
+        if (permission !== "granted") {
+            console.log("Notification permission denied.");
+            return;
+        }
+
+        const token = await getToken(messaging, {
+            vapidKey: "BFZ0767uqrN5u5Ey0HmcKJYrUgbDchsWXChR1PSezmLQToHkgAD4eImqTtFdi2oA1MKBJB9lJ31Pr2SPmbBu8cU"
+        });
+
+        if (!token) {
+            console.log("No registration token available.");
+            return;
+        }
+
+        console.log("Device FCM Token:", token);
+
+        await fetch(`${API_BASE}/api/push/register`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(token)
+        });
+
+        // Mark as registered
+        localStorage.setItem("pushRegistered", "true");
+
+        console.log("Token stored & registered");
+
+    } catch (err) {
+        console.error("Push setup error:", err);
+    }
+}
+setupPush();
+
+onMessage(messaging, (payload) => {
+    console.log("Foreground message:", payload);
+});
