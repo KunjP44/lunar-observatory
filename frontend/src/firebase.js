@@ -24,7 +24,7 @@ export async function initPush() {
 
         // Register service worker manually (important for GitHub Pages subpath)
         const registration = await navigator.serviceWorker.register(
-            "/lunar-observatory/firebase-messaging-sw.js"
+            "/Lunar_Observatory/frontend/firebase-messaging-sw.js"
         );
 
         const token = await messaging.getToken({

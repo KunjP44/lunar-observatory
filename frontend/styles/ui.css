@@ -5,6 +5,7 @@
 *::before,
 *::after {
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
 :root {
@@ -1386,6 +1387,9 @@ body.lunar-active .info-card {
 
         transition: max-height 0.5s cubic-bezier(0.32, 0.72, 0, 1);
         z-index: 150;
+        touch-action: pan-y;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
     }
 
     .lunar-cards.scrolled {
@@ -1508,9 +1512,8 @@ body.lunar-active .info-card {
         bottom: 0;
         left: 0;
         right: 0;
-        width: 100%;
+        width: 90%;
         height: 100%;
-
         border-right: none;
         border-top: 1px solid rgba(255, 255, 255, 0.15);
         border-radius: 0;
@@ -1530,7 +1533,8 @@ body.lunar-active .info-card {
     }
 
     .event-beacon {
-        bottom: 25px !important;
+        /* bottom: 25px !important; */
+        bottom: calc(max(24px, env(safe-area-inset-bottom) + 12px) + 60px) !important;
         left: 10px !important;
 
         /* Make it a tight circle */
