@@ -21,7 +21,7 @@ async function setupPush() {
 
         // Register correct SW
         const registration = await navigator.serviceWorker.register(
-            "/lunar-observatory/firebase-messaging-sw.js"
+            "./firebase-messaging-sw.js"
         );
 
         // IMPORTANT: pass registration here

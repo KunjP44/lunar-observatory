@@ -1365,31 +1365,25 @@ body.lunar-active .info-card {
 
     /* THE GLASS SHEET */
     .lunar-cards {
-        position: relative;
-        width: 100%;
+        transform: translateZ(0);
+        will-change: transform, scroll-position;
+        backface-visibility: hidden;
+        perspective: 1000px;
 
-        /* Unified Glass Background */
-        background: rgba(18, 18, 22, 0.40);
-        /* Slightly more visible for contrast */
-        backdrop-filter: blur(25px);
-        -webkit-backdrop-filter: blur(25px);
-
-        border-top-left-radius: 32px;
-        border-top-right-radius: 32px;
-        border-top: 1px solid rgba(255, 255, 255, 0.12);
-        box-shadow: 0 -10px 50px rgba(0, 0, 0, 0.6);
-
-        /* Peaking State */
-        height: auto;
-        max-height: 18vh;
-        overflow-y: auto;
-        padding: 24px 24px 120px 24px;
-
-        transition: max-height 0.5s cubic-bezier(0.32, 0.72, 0, 1);
-        z-index: 150;
-        touch-action: pan-y;
+        /* Native Inertia Scrolling */
         -webkit-overflow-scrolling: touch;
-        overscroll-behavior-y: contain;
+        touch-action: pan-y;
+        overscroll-behavior: contain;
+
+        /* Reduce blur intensity on mobile to prevent lag during scroll */
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+
+        /* Layout constraints */
+        width: 100%;
+        max-height: 65vh;
+        overflow-y: auto;
+        padding-bottom: 120px;
     }
 
     .lunar-cards.scrolled {
@@ -1518,9 +1512,7 @@ body.lunar-active .info-card {
         border-right: none;
         border-top: 1px solid rgba(255, 255, 255, 0.15);
         border-radius: 0;
-
-        /* Start Hidden to the BOTTOM */
-        transform: translateY(110%);
+        transform: translateX(110%);
     }
 
     /* Slide Up from Bottom */
@@ -1534,28 +1526,31 @@ body.lunar-active .info-card {
     }
 
     .event-beacon {
-        /* bottom: 25px !important; */
-        bottom: calc(max(24px, env(safe-area-inset-bottom) + 12px) + 60px) !important;
-        left: 10px !important;
+        top: 80px !important;
+        right: 20px !important;
+        bottom: auto !important;
+        /* clear bottom */
+        left: auto !important;
+        /* clear right */
 
-        /* Make it a tight circle */
+        position: fixed;
+        z-index: 2000;
+
         width: 44px;
         height: 44px;
         padding: 0;
 
-        /* Remove the border to make it look like a floating star/orb */
-        border: none;
-        background: rgba(28, 28, 30, 0.4);
-        /* Faint background */
-
+        /* Optimized Glass for Mobile */
+        background: rgba(30, 30, 35, 0.6);
+        backdrop-filter: blur(8px);
+        /* Lower blur for better performance */
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
         border-radius: 50%;
-        justify-content: center;
-        /* Horizontally center dot */
-        align-items: center;
-        /* Vertically center dot */
 
-        /* Ensure it's above the pill */
-        z-index: 2000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     /* HIDE TEXT */
