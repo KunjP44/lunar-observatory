@@ -22,8 +22,14 @@ export async function initPush() {
             return;
         }
 
+        // Register service worker manually (important for GitHub Pages subpath)
+        const registration = await navigator.serviceWorker.register(
+            "/lunar-observatory/firebase-messaging-sw.js"
+        );
+
         const token = await messaging.getToken({
-            vapidKey: "BFZ0767uqrN5u5Ey0HmcKJYrUgbDchsWXChR1PSezmLQToHkgAD4eImqTtFdi2oA1MKBJB9lJ31Pr2SPmbBu8cU"
+            vapidKey: "BFZ0767uqrN5u5Ey0HmcKJYrUgbDchsWXChR1PSezmLQToHkgAD4eImqTtFdi2oA1MKBJB9lJ31Pr2SPmbBu8cU",
+            serviceWorkerRegistration: registration
         });
 
         if (token) {
