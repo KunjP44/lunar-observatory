@@ -2021,24 +2021,34 @@ const messaging = getMessaging(firebaseApp);
 
 async function setupPush() {
     try {
-        // Prevent repeated registration
+        // 1. Check if we already registered to avoid spamming
         if (localStorage.getItem("pushRegistered")) {
             console.log("Push already registered.");
             return;
         }
 
+        // 2. Request Notification Permission
         const permission = await Notification.requestPermission();
-
         if (permission !== "granted") {
             console.log("Notification permission denied.");
             return;
         }
 
+        // 3. Register the Service Worker
+        // We use './' scope to ensure it handles the repository subdirectory correctly
         const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js', {
-            scope: './' // specific to your repo path
+            scope: './'
         });
 
-        // 2. Pass the registration to getToken
+        console.log("Service Worker registered. Waiting for it to be ready...");
+
+        // 4. CRITICAL FIX: Wait for the Service Worker to be 'Active'
+        // This promise resolves only when the SW is fully active and controlling the page
+        await navigator.serviceWorker.ready;
+
+        console.log("Service Worker is ready! getting token...");
+
+        // 5. Get the Token using the *active* registration
         const token = await getToken(messaging, {
             vapidKey: "BFZ0767uqrN5u5Ey0HmcKJYrUgbDchsWXChR1PSezmLQToHkgAD4eImqTtFdi2oA1MKBJB9lJ31Pr2SPmbBu8cU",
             serviceWorkerRegistration: registration
@@ -2051,6 +2061,7 @@ async function setupPush() {
 
         console.log("Device FCM Token:", token);
 
+        // 6. Send to your backend
         await fetch(`${API_BASE}/api/push/register`, {
             method: "POST",
             headers: {
@@ -2059,10 +2070,9 @@ async function setupPush() {
             body: JSON.stringify(token)
         });
 
-        // Mark as registered
+        // 7. Mark as registered
         localStorage.setItem("pushRegistered", "true");
-
-        console.log("Token stored & registered");
+        console.log("Token stored & registered successfully");
 
     } catch (err) {
         console.error("Push setup error:", err);
