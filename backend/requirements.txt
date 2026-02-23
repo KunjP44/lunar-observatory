@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+firebase-admin
+requests
+numpy
+skyfield
+pydantic
+python-dotenv

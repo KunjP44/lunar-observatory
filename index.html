@@ -40,31 +40,56 @@
                     <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
                     <path d="M3 3v5h5"></path>
                 </svg>
-                <span class="btn-label">Reset View</span>
+                <span class="btn-label" id="reset-label">Reset View</span>
             </button>
 
             <div class="vertical-divider"></div>
 
-            <div class="time-group">
-                <button id="time-down" class="control-btn icon-only" title="Slower">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                </button>
+            <button id="btn-date-trigger" class="control-btn" title="Change Date">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span class="btn-label" id="solar-date-label">Today</span>
+            </button>
+            <div class="vertical-divider"></div>
 
-                <div class="time-display">
-                    <span id="time-label">1×</span>
-                </div>
+            <button id="btn-notifications" class="control-btn" title="Notifications">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <span class="btn-label">Alerts</span>
+            </button>
+        </div>
 
-                <button id="time-up" class="control-btn icon-only" title="Faster">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                </button>
+        <div id="solar-date-picker" class="date-picker-popup hidden">
+            <div class="picker-header">Travel to Date</div>
+            <input type="date" id="solar-date-input" class="modern-date-input" />
+            <div class="picker-actions">
+                <button class="date-btn secondary" id="solar-cancel-date">Cancel</button>
+                <button class="date-btn primary" id="solar-apply-date">Warp</button>
             </div>
+        </div>
+
+        <div id="notification-popup" class="date-picker-popup hidden">
+            <div class="picker-header">Notifications</div>
+
+            <button class="date-btn secondary" id="enable-daily-brief">
+                🌅 Daily Morning Brief (7 AM IST)
+            </button>
+
+            <button class="date-btn secondary" id="enable-planet-brief">
+                🪐 Daily Planet Visibility
+            </button>
+
+            <button class="date-btn secondary" id="disable-notifications">
+                ❌ Disable All
+            </button>
         </div>
     </div>
     <div id="page-transition" class="page-transition hidden"></div>
@@ -91,7 +116,7 @@
                 <div><span>Orbital Period</span><span id="fact-orbit"></span></div>
             </div>
 
-            <button id="toggle-details" class="toggle-btn">View Telemetry</button>
+            <button id="toggle-details" class="toggle-btn">VIEW SYSTEM DATA</button>
 
             <div id="card-details" class="card-details">
                 <p id="card-description-long"></p>
@@ -112,7 +137,6 @@
     <div class="ui-top">
         <div class="ui-title">Lunar Observatory-α</div>
         <div class="ui-subtitle">Interactive Astronomy Tool</div>
-        <div class="ui-date" id="solar-date"></div>
         <div class="ui-alpha-note">
             This application is currently in alpha version. Features and data may change.
         </div>
@@ -122,15 +146,10 @@
 
     <section id="moon-mode" class="moon-mode hidden">
         <div class="lunar-layout">
-
             <div class="lunar-visual">
             </div>
-
             <div id="moon-sheet" class="lunar-cards">
-                <div class="sheet-header">
-                    <div class="sheet-handle"></div>
-                    <div class="sheet-modes"></div>
-                </div>
+
                 <section class="moon-card hero-card" id="date-card">
                     <div class="date-display" id="date-display">
                         <div class="date-row">
@@ -161,75 +180,180 @@
                     </div>
                 </section>
 
-                <section class="moon-card">
-                    <div class="card-header-row">
-                        <div class="icon-box blue">◐</div>
-                        <h3>Phase Cycle</h3>
-                    </div>
-                    <div class="data-list">
-                        <div class="data-row">
-                            <span class="label">Current Phase</span>
-                            <span class="value" id="ui-phase">—</span>
+                <div id="moon-content">
+                    <section class="moon-card">
+                        <div class="card-header-row">
+                            <div class="icon-box blue">◐</div>
+                            <h3>Phase Cycle</h3>
                         </div>
-                        <div class="data-row">
-                            <span class="label">Illumination</span>
-                            <span class="value highlight" id="ui-illum">—</span>
+                        <div class="data-list">
+                            <div class="data-row">
+                                <span class="label">Current Phase</span>
+                                <span class="value" id="ui-phase">—</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Illumination</span>
+                                <span class="value highlight" id="ui-illum">—</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Lunar Age</span>
+                                <span class="value" id="ui-age">—</span>
+                            </div>
                         </div>
-                        <div class="data-row">
-                            <span class="label">Lunar Age</span>
-                            <span class="value" id="ui-age">—</span>
-                        </div>
-                    </div>
-                </section>
+                    </section>
 
-                <section class="moon-card">
-                    <div class="card-header-row">
-                        <div class="icon-box purple">🕉</div>
-                        <h3>Panchang</h3>
-                    </div>
-                    <div class="data-list">
-                        <div class="data-row">
-                            <span class="label">Tithi</span>
-                            <span class="value" id="ui-tithi">—</span>
+                    <section class="moon-card">
+                        <div class="card-header-row">
+                            <div class="icon-box purple">🕉</div>
+                            <h3>Panchang</h3>
                         </div>
-                        <div class="data-row">
-                            <span class="label">Paksha</span>
-                            <span class="value" id="ui-paksha">—</span>
+                        <div class="data-list">
+                            <div class="data-row">
+                                <span class="label">Tithi</span>
+                                <span class="value" id="ui-tithi">—</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Paksha</span>
+                                <span class="value" id="ui-paksha">—</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Nakshatra</span>
+                                <span class="value" id="ui-nakshatra">—</span>
+                            </div>
                         </div>
-                        <div class="data-row">
-                            <span class="label">Nakshatra</span>
-                            <span class="value" id="ui-nakshatra">—</span>
-                        </div>
-                    </div>
-                </section>
+                    </section>
 
-                <section class="moon-card">
-                    <div class="card-header-row">
-                        <div class="icon-box green">🔭</div>
-                        <h3>Astrophysics</h3>
-                    </div>
-                    <div class="data-list">
-                        <div class="data-row">
-                            <span class="label">Distance</span>
-                            <span class="value" id="ui-distance">—</span>
+                    <section class="moon-card">
+                        <div class="card-header-row">
+                            <div class="icon-box green">🔭</div>
+                            <h3>Astrophysics</h3>
                         </div>
-                        <div class="data-row">
-                            <span class="label">Velocity</span>
-                            <span class="value">1.022 km/s</span>
+                        <div class="data-list">
+                            <div class="data-row">
+                                <span class="label">Distance</span>
+                                <span class="value" id="ui-distance">—</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Velocity</span>
+                                <span class="value">1.022 km/s</span>
+                            </div>
                         </div>
-                    </div>
-                </section>
+                    </section>
 
+                    <div id="planet-visibility-section" class="hidden">
+                        <section class="moon-card">
+                            <div class="card-header-row">
+                                <div class="icon-box blue">🪐</div>
+                                <h3>Planetary Visibility</h3>
+                            </div>
+                            <div id="planet-visibility-list">
+                            </div>
+                        </section>
+                    </div>
+                </div>
                 <div class="mobile-spacer"></div>
                 <div class="scroll-buffer"></div>
             </div>
         </div>
     </section>
 
+    <section id="learn-mode" class="learn-mode hidden">
+
+        <!-- ================= HOME VIEW ================= -->
+        <div id="learn-home">
+
+            <div class="learn-header">
+                <h1>Learn Astronomy</h1>
+                <p>Interactive visual lessons to understand celestial mechanics.</p>
+            </div>
+
+            <div class="learn-grid">
+
+                <!-- SOLAR ECLIPSE -->
+                <div class="lesson-card" data-lesson="solar-eclipse">
+                    <div class="lesson-canvas eclipse-preview">
+                        <div class="sun"></div>
+                        <div class="moon"></div>
+                    </div>
+                    <h3>Solar Eclipse</h3>
+                    <p>
+                        Understand how the Moon blocks sunlight and creates total,
+                        partial and annular eclipses on Earth.
+                    </p>
+                    <button class="lesson-btn">Explore Lesson</button>
+                </div>
+
+                <div class="lesson-card" data-lesson="earth-rotation">
+                    <div class="lesson-canvas rotation-preview"></div>
+                    <h3>Earth Rotation</h3>
+                    <p>
+                        See how Earth's rotation causes day and night.
+                    </p>
+                    <button class="lesson-btn">Explore Lesson</button>
+                </div>
+
+                <!-- PLANET ORBITS -->
+                <div class="lesson-card" data-lesson="planet-orbits">
+                    <div class="lesson-canvas orbit-preview"></div>
+                    <h3>Planet Orbits</h3>
+                    <p>
+                        Understand elliptical motion and orbital periods.
+                    </p>
+                    <button class="lesson-btn">Explore Lesson</button>
+                </div>
+
+                <!-- LUNAR ECLIPSE -->
+                <div class="lesson-card" data-lesson="lunar-eclipse">
+                    <div class="lesson-canvas lunar-preview">
+                        <div class="earth"></div>
+                        <div class="moon-eclipse"></div>
+                    </div>
+                    <h3>Lunar Eclipse</h3>
+                    <p>
+                        Learn how Earth's shadow falls on the Moon and why
+                        it sometimes turns red during totality.
+                    </p>
+                    <button class="lesson-btn">Explore Lesson</button>
+                </div>
+
+            </div>
+        </div>
+
+
+        <!-- ================= DETAIL VIEW ================= -->
+        <div id="learn-detail" class="hidden">
+
+            <button id="learn-back-btn" class="control-btn">
+                ← Back to Lessons
+            </button>
+
+            <div id="learn-lesson-container"></div>
+
+        </div>
+
+    </section>
+
+    <!-- Observatory Beacon -->
+    <div id="event-beacon" class="event-beacon">
+        <div class="beacon-dot"></div>
+    </div>
+
+    <!-- Intelligence Log Panel -->
+    <div id="events-panel" class="events-panel">
+        <div class="events-header">
+            <span>ASTRONOMY INTELLIGENCE LOG</span>
+            <button id="close-events" class="panel-close-btn">✕</button>
+        </div>
+
+        <div id="events-year-label" class="events-year-label"></div>
+
+        <div id="events-container" class="events-container"></div>
+    </div>
+
     <script type="module" src="./frontend/src/main.js"></script>
     <script>
         if ("serviceWorker" in navigator) {
-            navigator.serviceWorker.register("./frontend/sw.js", { scope: "./" })
+            navigator.serviceWorker.register("./frontend/sw.js")
                 .then((registration) => {
                     console.log("Service Worker registered with scope:", registration.scope);
                 })
