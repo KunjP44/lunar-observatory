@@ -676,47 +676,43 @@ canvas.addEventListener("touchstart", (e) => {
     }
 }, { passive: false });
 
+// FIND THIS BLOCK IN main.js AND REPLACE IT
 canvas.addEventListener("touchmove", (e) => {
-    e.preventDefault(); // Prevent scrolling the webpage while rotating 3D
+    e.preventDefault();
 
-    // 1. Rotation logic
+    // 1. Rotation logic (Strictly 1 finger AND NOT PINCHING)
     if (e.touches.length === 1 && !isPinching) {
         const dx = e.touches[0].clientX - touchStart.x;
         const dy = e.touches[0].clientY - touchStart.y;
 
-        // Sensitivity multiplier
-        const SENSITIVITY = 0.005;
+        const SENSITIVITY = 0.004; // Slightly lower sensitivity for smoother feel
 
         if (cameraMode === "lunar") {
-            // Rotate moon directly
             if (planetMeshes.moon) planetMeshes.moon.rotation.y += dx * SENSITIVITY;
         } else {
-            // Orbit camera
             targetTheta -= dx * SENSITIVITY;
             targetPhi -= dy * SENSITIVITY;
-
-            // Clamp Phi to prevent flipping
             targetPhi = THREE.MathUtils.clamp(targetPhi, 0.1, Math.PI - 0.1);
         }
 
-        // Update last position for next frame
         touchStart.x = e.touches[0].clientX;
         touchStart.y = e.touches[0].clientY;
     }
 
-    // 2. Pinch Zoom logic
+    // 2. Pinch Zoom logic (Strictly 2 fingers)
     if (e.touches.length === 2) {
+        isPinching = true; // FORCE PINCH STATE
+        isDragging = false; // KILL DRAG STATE
+
         const dx = e.touches[0].clientX - e.touches[1].clientX;
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         const currentDist = Math.sqrt(dx * dx + dy * dy);
 
-        // Calculate zoom factor
         const delta = lastTouchDist - currentDist;
         const zoomSpeed = 0.5;
 
         targetRadius += delta * zoomSpeed;
 
-        // Clamp radius
         const min = cameraMode === "focus" ? focusMinRadius : DEFAULT_MIN_RADIUS;
         const max = cameraMode === "focus" ? focusMaxRadius : DEFAULT_MAX_RADIUS;
         targetRadius = THREE.MathUtils.clamp(targetRadius, min, max);
@@ -955,6 +951,15 @@ function focusOn(obj) {
     focusMinRadius = Math.max(20, r * 4);
     focusMaxRadius = r * 40;
     targetRadius = r * 12;
+
+    const isMobileDevice = window.innerWidth < 768;
+
+    // Desktop: 12x radius, Mobile: 18x radius (keeps it further away)
+    const zoomMultiplier = isMobileDevice ? 18 : 12;
+
+    focusMinRadius = Math.max(20, r * 4);
+    focusMaxRadius = r * 40;
+    targetRadius = r * zoomMultiplier;
 
     // 🔹 Pretty name
     document.getElementById("focus-name").textContent =

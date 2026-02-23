@@ -14,35 +14,25 @@ firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
 // Ask permission + get token
-export async function initPush() {
+async function setupPush() {
     try {
         const permission = await Notification.requestPermission();
-        if (permission !== "granted") {
-            console.log("Notification permission denied");
-            return;
-        }
+        if (permission !== "granted") return;
 
-        // Register service worker manually (important for GitHub Pages subpath)
+        // Register correct SW
         const registration = await navigator.serviceWorker.register(
-            "/Lunar_Observatory/frontend/firebase-messaging-sw.js"
+            "/lunar-observatory/firebase-messaging-sw.js"
         );
 
-        const token = await messaging.getToken({
+        // IMPORTANT: pass registration here
+        const token = await getToken(messaging, {
             vapidKey: "BFZ0767uqrN5u5Ey0HmcKJYrUgbDchsWXChR1PSezmLQToHkgAD4eImqTtFdi2oA1MKBJB9lJ31Pr2SPmbBu8cU",
             serviceWorkerRegistration: registration
         });
 
-        if (token) {
-            console.log("FCM Token:", token);
+        console.log("Device FCM Token:", token);
 
-            // Send token to backend
-            await fetch("https://lunar-observatory.onrender.com/api/push/register", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(token)
-            });
-        }
     } catch (err) {
-        console.error("Push init error:", err);
+        console.error("Push setup error:", err);
     }
 }
