@@ -2034,8 +2034,14 @@ async function setupPush() {
             return;
         }
 
+        const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js', {
+            scope: './' // specific to your repo path
+        });
+
+        // 2. Pass the registration to getToken
         const token = await getToken(messaging, {
-            vapidKey: "BFZ0767uqrN5u5Ey0HmcKJYrUgbDchsWXChR1PSezmLQToHkgAD4eImqTtFdi2oA1MKBJB9lJ31Pr2SPmbBu8cU"
+            vapidKey: "BFZ0767uqrN5u5Ey0HmcKJYrUgbDchsWXChR1PSezmLQToHkgAD4eImqTtFdi2oA1MKBJB9lJ31Pr2SPmbBu8cU",
+            serviceWorkerRegistration: registration
         });
 
         if (!token) {
