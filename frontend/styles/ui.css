@@ -1304,13 +1304,28 @@ body.lunar-active .info-card {
     .ui-controls {
         top: max(20px, env(safe-area-inset-top) + 12px);
         right: 20px;
+        gap: 8px;
     }
 
     .control-bar {
-        padding: 3px;
+        padding: 2px;
         transform: scale(0.95);
         transform-origin: right top;
         background: rgba(20, 20, 22, 0.85);
+    }
+
+    .control-btn {
+        height: 30px;
+        /* Smaller height (was 36px) */
+        padding: 0 10px;
+        /* Smaller padding */
+        font-size: 11px;
+        /* Smaller font */
+        gap: 6px;
+    }
+
+    .btn-label {
+        display: none;
     }
 
     #reset-view .btn-label {
@@ -1417,7 +1432,7 @@ body.lunar-active .info-card {
 
         width: auto !important;
         min-width: 260px;
-        z-index: 500 !important;
+        z-index: 1000 !important;
         display: flex;
         justify-content: center;
         pointer-events: auto;
@@ -1446,6 +1461,7 @@ body.lunar-active .info-card {
         width: 100%;
         border-radius: 32px 32px 0 0;
         padding: 28px 28px 100px 28px;
+        padding-bottom: 100px;
         max-height: 80vh;
         z-index: 600;
         /* Higher than Pill */
@@ -1489,19 +1505,15 @@ body.lunar-active .info-card {
 
     .events-panel {
         top: auto;
-        /* Unset top */
         bottom: 0;
-        /* Stick to bottom */
         left: 0;
         right: 0;
-        /* Stretch full width */
         width: 100%;
-        height: 75vh;
-        /* 3/4 Height */
+        height: 100%;
 
         border-right: none;
         border-top: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 24px 24px 0 0;
+        border-radius: 0;
 
         /* Start Hidden to the BOTTOM */
         transform: translateY(110%);
@@ -1511,6 +1523,52 @@ body.lunar-active .info-card {
     .events-panel.show {
         transform: translateY(0);
     }
+
+    .events-header {
+        padding-top: env(safe-area-inset-top, 20px);
+        height: auto;
+    }
+
+    .event-beacon {
+        bottom: 25px !important;
+        left: 10px !important;
+
+        /* Make it a tight circle */
+        width: 44px;
+        height: 44px;
+        padding: 0;
+
+        /* Remove the border to make it look like a floating star/orb */
+        border: none;
+        background: rgba(28, 28, 30, 0.4);
+        /* Faint background */
+
+        border-radius: 50%;
+        justify-content: center;
+        /* Horizontally center dot */
+        align-items: center;
+        /* Vertically center dot */
+
+        /* Ensure it's above the pill */
+        z-index: 2000;
+    }
+
+    /* HIDE TEXT */
+    .event-beacon::after {
+        display: none;
+    }
+
+    /* MAKE DOT BIGGER & GLOWING */
+    .beacon-dot {
+        margin: 0;
+        width: 12px;
+        /* Slightly bigger */
+        height: 12px;
+        background: #FFD778;
+        border-radius: 50%;
+        box-shadow: 0 0 10px 2px rgba(255, 215, 120, 0.8);
+    }
+
 
     /* Animation for Mobile (Slide Up) */
     @keyframes popIn {
@@ -1570,28 +1628,29 @@ body.events-open canvas {
 }
 
 .event-beacon {
+    bottom: 32px !important;
+    height: 44px;
     position: fixed;
-    bottom: 32px;
     left: 32px;
     z-index: 2000;
-
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 16px;
+    padding: 0 16px;
 
     background: rgba(28, 28, 30, 0.7);
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
 
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 215, 120, 0.3);
+    /* Yellowish border */
     border-radius: 999px;
 
     transition: all 0.25s ease;
 }
 
 .event-beacon:hover {
-    background: rgba(255, 215, 120, 0.2);
+    background: rgba(255, 215, 120, 0.15);
     box-shadow: 0 0 15px rgba(255, 215, 120, 0.15);
     cursor: pointer;
 }
