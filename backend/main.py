@@ -38,7 +38,13 @@ def push_register(token: str = Body(...)):
     return {"status": "registered"}
 
 
-@api.post("/api/push/test")
+@api.get("/api/push/test")
 def push_test():
     send_notification("Backend Test", "Push from FastAPI backend is working.")
     return {"status": "sent"}
+
+
+# @api.post("/api/push/test")
+# def push_test():
+#     send_notification("Backend Test", "Push from FastAPI backend is working.")
+#     return {"status": "sent"}
