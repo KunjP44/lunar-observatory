@@ -1,0 +1,14 @@
+name: Morning Brief
+
+on:
+  schedule:
+    # 8:00 AM IST = 2:30 AM UTC
+    - cron: "30 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  send-brief:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Morning Brief API
+        run: curl https://lunar-observatory.onrender.com/api/push/morning

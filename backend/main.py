@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Body
 from pydantic import BaseModel
+import datetime
+import pytz
 
 from backend.moon.calendar import get_ui_moon_data
 from backend.solar.router import router as solar_router
@@ -33,12 +35,6 @@ def moon_endpoint(d: str, lat: float | None = None, lon: float | None = None):
 init_event_cache()
 
 
-# @api.post("/api/push/register")
-# def push_register(token: str = Body(...)):
-#     register_token(token)
-#     return {"status": "registered"}
-
-
 class TokenModel(BaseModel):
     token: str
 
@@ -55,7 +51,41 @@ def push_test():
     return {"status": "sent"}
 
 
-# @api.post("/api/push/test")
-# def push_test():
-#     send_notification("Backend Test", "Push from FastAPI backend is working.")
-#     return {"status": "sent"}
+@api.get("/api/push/morning")
+def morning_brief():
+    india = pytz.timezone("Asia/Kolkata")
+    now = datetime.datetime.now(india)
+
+    today_str = now.strftime("%Y-%m-%d")
+
+    # Moon
+    moon = get_ui_moon_data(today_str)
+
+    # Planet visibility
+    from backend.visibility.engine import compute_visibility
+
+    visibility = compute_visibility(today_str)
+
+    good_planets = []
+    for name, data in visibility.items():
+        if data["visibility_rating"] in ["Good", "Excellent"]:
+            good_planets.append(name.capitalize())
+
+    # Build structured message
+    moon_line_1 = f"Moon: {moon['phase']}"
+    moon_line_2 = f"Illumination: {moon['illumination']}%"
+
+    if good_planets:
+        planet_line = "Best Tonight:\n" + ", ".join(good_planets)
+    else:
+        planet_line = "No major planets well placed tonight"
+
+    body = f"{moon_line_1}\n{moon_line_2}\n\n{planet_line}"
+
+    send_notification("Lunar Observatory", body)
+
+    return {
+        "status": "morning sent",
+        "date": today_str,
+        "visible_planets": good_planets,
+    }
