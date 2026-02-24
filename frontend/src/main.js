@@ -2067,7 +2067,7 @@ async function setupPush() {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(token)
+            body: JSON.stringify({ token: token })
         });
 
         // 7. Mark as registered

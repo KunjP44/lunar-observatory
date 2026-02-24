@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Body
+from pydantic import BaseModel
 
 from backend.moon.calendar import get_ui_moon_data
 from backend.solar.router import router as solar_router
@@ -32,9 +33,19 @@ def moon_endpoint(d: str, lat: float | None = None, lon: float | None = None):
 init_event_cache()
 
 
+# @api.post("/api/push/register")
+# def push_register(token: str = Body(...)):
+#     register_token(token)
+#     return {"status": "registered"}
+
+
+class TokenModel(BaseModel):
+    token: str
+
+
 @api.post("/api/push/register")
-def push_register(token: str = Body(...)):
-    register_token(token)
+def push_register(data: TokenModel):
+    register_token(data.token)
     return {"status": "registered"}
 
 
