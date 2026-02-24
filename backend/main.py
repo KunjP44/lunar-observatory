@@ -1,3 +1,4 @@
+from backend.database import get_all_tokens
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Body
@@ -47,8 +48,12 @@ def push_register(data: TokenModel):
 
 @api.get("/api/push/test")
 def push_test():
+
+    tokens = get_all_tokens()
+
     send_notification("Backend Test", "Push from FastAPI backend is working.")
-    return {"status": "sent"}
+
+    return {"status": "sent", "tokens": tokens}
 
 
 @api.get("/api/push/morning")
