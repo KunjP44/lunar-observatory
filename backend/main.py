@@ -12,6 +12,7 @@ from backend.events.router import router as events_router, init_event_cache
 from backend.visibility.router import router as visibility_router
 from backend.push import register_token, send_notification
 from backend.database import init_db
+from backend.facts import get_random_fact
 
 api = FastAPI()
 init_db()
@@ -63,9 +64,15 @@ def morning_brief():
     today_str = now.strftime("%Y-%m-%d")
 
     moon = get_ui_moon_data(today_str)
+    fact = get_random_fact()
 
-    body = f"Moon: {moon['phase']}\n" f"Illumination: {moon['illumination']}%"
+    body = (
+        f"Moon: {moon['phase']}\n"
+        f"Illumination: {moon['illumination']}%\n\n"
+        f"Did you know?\n{fact}"
+    )
 
-    send_notification("Lunar Observatory", body)
+    # send_notification("Lunar Observatory", body)
+    send_notification("Morning Sky Update", body)
 
     return {"status": "morning sent"}
