@@ -41,7 +41,7 @@ def send_notification(title: str, body: str):
             ),
             webpush=messaging.WebpushConfig(
                 notification=messaging.WebpushNotification(
-                    icon="https://kunjp44.github.io/lunar-observatory/frontend/public/assets/notification-icon.png",
+                    icon="https://kunjp44.github.io/lunar-observatory/frontend/assets/notification-icon.png",
                 )
             ),
             token=token,
