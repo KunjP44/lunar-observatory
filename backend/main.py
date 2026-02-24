@@ -66,11 +66,7 @@ def morning_brief():
     moon = get_ui_moon_data(today_str)
     fact = get_random_fact()
 
-    body = (
-        f"Moon: {moon['phase']}\n"
-        f"Illumination: {moon['illumination']}%\n\n"
-        f"Did you know?\n{fact}"
-    )
+    body = f"{fact}\n\n" f"Moon: {moon['phase']} • {moon['illumination']}%"
 
     # send_notification("Lunar Observatory", body)
     send_notification("Morning Sky Update", body)

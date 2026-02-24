@@ -2021,12 +2021,6 @@ const messaging = getMessaging(firebaseApp);
 
 async function setupPush() {
     try {
-        // 1. Check if we already registered to avoid spamming
-        if (localStorage.getItem("pushRegistered")) {
-            console.log("Push already registered.");
-            return;
-        }
-
         // 2. Request Notification Permission
         const permission = await Notification.requestPermission();
         if (permission !== "granted") {
