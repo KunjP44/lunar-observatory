@@ -36,3 +36,11 @@ async function setupPush() {
         console.error("Push setup error:", err);
     }
 }
+
+
+self.addEventListener('notificationclick', function (event) {
+    event.notification.close();
+    event.waitUntil(
+        clients.openWindow('/lunar-observatory/')
+    );
+});
