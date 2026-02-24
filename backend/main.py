@@ -44,6 +44,13 @@ class TokenModel(BaseModel):
 @api.post("/api/push/register")
 def push_register(data: TokenModel):
     register_token(data.token)
+
+    # Send welcome notification automatically
+    send_notification(
+        "Welcome to Lunar Observatory 🌌",
+        "You're now subscribed to Morning Sky Updates.",
+    )
+
     return {"status": "registered"}
 
 
@@ -66,7 +73,7 @@ def morning_brief():
     moon = get_ui_moon_data(today_str)
     fact = get_random_fact()
 
-    body = f"{fact}\n\n" f"Moon: {moon['phase']} • {moon['illumination']}%"
+    body = f"🌌 {fact}\n\n" f"🌙 {moon['phase']} • {moon['illumination']}%"
 
     # send_notification("Lunar Observatory", body)
     send_notification("Morning Sky Update", body)
