@@ -2002,36 +2002,73 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 const messaging = getMessaging(firebaseApp);
 
+// ... existing imports ...
+
 async function setupPush() {
     try {
         const permission = await Notification.requestPermission();
-        if (permission !== "granted") return;
+        if (permission !== "granted") {
+            console.log("Notification permission denied.");
+            return;
+        }
 
-        const registration = await navigator.serviceWorker.register(
-            "/firebase-messaging-sw.js"
-        );
+        // 1. REGISTER SW FIRST
+        // We use scope: './' so it works on GitHub Pages subdirectories
+        const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js', {
+            scope: './'
+        });
 
+        // Wait for SW to be ready (fixes the "failed to register" error)
+        await navigator.serviceWorker.ready;
+
+        // 2. GET TOKEN (Always get it, don't rely on localStorage check to skip)
         const token = await getToken(messaging, {
             vapidKey: "BFZ0767uqrN5u5Ey0HmcKJYrUgbDchsWXChR1PSezmLQToHkgAD4eImqTtFdi2oA1MKBJB9lJ31Pr2SPmbBu8cU",
             serviceWorkerRegistration: registration
         });
 
-        if (!token) return;
+        if (!token) {
+            console.log("No registration token available.");
+            return;
+        }
 
-        await fetch(`${API_BASE}/api/push/register`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ token })
-        });
+        // 3. CHECK IF TOKEN CHANGED
+        const savedToken = localStorage.getItem("fcm_token");
 
-        console.log("Token synced:", token);
+        if (token !== savedToken) {
+            console.log("New token detected, updating backend...");
+
+            await fetch(`${API_BASE}/api/push/register`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(token)
+            });
+
+            localStorage.setItem("fcm_token", token);
+            localStorage.setItem("pushRegistered", "true");
+            console.log("Token registered successfully.");
+        } else {
+            console.log("Token is up to date.");
+        }
 
     } catch (err) {
         console.error("Push setup error:", err);
     }
 }
+
+// Initialize
 setupPush();
 
+// 4. HANDLE FOREGROUND MESSAGES (The Mobile Fix)
 onMessage(messaging, (payload) => {
-    console.log("Foreground message:", payload);
+    console.log("Foreground message received:", payload);
+
+    // Manually show a notification because the browser won't do it automatically 
+    // when the tab is in focus
+    const { title, body, icon } = payload.notification;
+
+    new Notification(title, {
+        body: body,
+        icon: icon || "https://kunjp44.github.io/lunar-observatory/frontend/assets/logo-app.png"
+    });
 });
