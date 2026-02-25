@@ -79,3 +79,7 @@ def morning_brief():
     send_notification("Morning Sky Update", body)
 
     return {"status": "morning sent"}
+
+@api.get("/")
+def health():
+    return {"status": "ok"}

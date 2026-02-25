@@ -10,4 +10,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping Render
-        run: curl -s https://lunar-observatory.onrender.com/moon?d=2026-01-01
+        run: curl -s https://lunar-observatory.onrender.com/

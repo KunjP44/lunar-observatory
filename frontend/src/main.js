@@ -2075,12 +2075,13 @@ document.getElementById("enable-daily-brief")?.addEventListener("click", async (
 onMessage(messaging, (payload) => {
     console.log("Foreground message received:", payload);
 
-    // Manually show a notification because the browser won't do it automatically 
-    // when the tab is in focus
-    const { title, body, icon } = payload.notification;
+    // Only show manually if tab is visible
+    if (document.visibilityState === "visible") {
+        const { title, body, icon } = payload.notification;
 
-    new Notification(title, {
-        body: body,
-        icon: icon || "https://kunjp44.github.io/lunar-observatory/frontend/assets/logo-app.png"
-    });
+        new Notification(title, {
+            body,
+            icon: icon || "/lunar-observatory/frontend/assets/notification-icon.png"
+        });
+    }
 });
