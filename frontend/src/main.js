@@ -2071,17 +2071,7 @@ document.getElementById("enable-daily-brief")?.addEventListener("click", async (
     alert("🌅 Daily Morning Brief Enabled");
 });
 
-// 4. HANDLE FOREGROUND MESSAGES (The Mobile Fix)
 onMessage(messaging, (payload) => {
     console.log("Foreground message received:", payload);
-
-    // Only show manually if tab is visible
-    if (document.visibilityState === "visible") {
-        const { title, body, icon } = payload.notification;
-
-        new Notification(title, {
-            body,
-            icon: icon || "/lunar-observatory/frontend/assets/notification-icon.png"
-        });
-    }
+    // Do NOT manually show notification.
 });
