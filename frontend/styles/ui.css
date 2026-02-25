@@ -1379,14 +1379,14 @@ body.lunar-active .info-card {
         /* Remove the "Peaking" limit */
 
         /* 3. Push cards WAY down so Moon is centered & visible initially */
-        padding: 55vh 20px 140px 20px;
+        padding: 76vh 20px 48px 20px;
 
         /* 4. Enable Scroll */
         overflow-y: auto;
         pointer-events: auto !important;
 
         /* 5. Visuals: Transparent bg (cards define their own glass) */
-        background: transparent;
+        background: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.8) 40%);
         border: none;
         box-shadow: none;
         backdrop-filter: none;

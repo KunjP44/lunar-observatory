@@ -2012,16 +2012,23 @@ async function setupPush() {
             return;
         }
 
-        // 1. REGISTER SW FIRST
-        // We use scope: './' so it works on GitHub Pages subdirectories
-        const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js', {
+        // 1. DETERMINE CORRECT PATH
+        // If on localhost, look at root. If on GitHub Pages, look in the subfolder.
+        const swPath = location.hostname === "localhost" || location.hostname === "127.0.0.1"
+            ? '/firebase-messaging-sw.js'
+            : '/lunar-observatory/firebase-messaging-sw.js';
+
+        console.log(`Registering SW at: ${swPath}`);
+
+        // 2. REGISTER SERVICE WORKER
+        const registration = await navigator.serviceWorker.register(swPath, {
             scope: './'
         });
 
-        // Wait for SW to be ready (fixes the "failed to register" error)
+        // Wait for it to be ready to avoid "failed to execute subscribe" errors
         await navigator.serviceWorker.ready;
 
-        // 2. GET TOKEN (Always get it, don't rely on localStorage check to skip)
+        // 3. GET TOKEN
         const token = await getToken(messaging, {
             vapidKey: "BFZ0767uqrN5u5Ey0HmcKJYrUgbDchsWXChR1PSezmLQToHkgAD4eImqTtFdi2oA1MKBJB9lJ31Pr2SPmbBu8cU",
             serviceWorkerRegistration: registration
@@ -2032,7 +2039,7 @@ async function setupPush() {
             return;
         }
 
-        // 3. CHECK IF TOKEN CHANGED
+        // 4. CHECK IF TOKEN CHANGED & SEND TO BACKEND
         const savedToken = localStorage.getItem("fcm_token");
 
         if (token !== savedToken) {
