@@ -75,22 +75,6 @@
                 <button class="date-btn primary" id="solar-apply-date">Warp</button>
             </div>
         </div>
-
-        <div id="notification-popup" class="date-picker-popup hidden">
-            <div class="picker-header">Notifications</div>
-
-            <button class="date-btn secondary" id="enable-daily-brief">
-                🌅 Daily Morning Brief (7 AM IST)
-            </button>
-
-            <button class="date-btn secondary" id="enable-planet-brief">
-                🪐 Daily Planet Visibility
-            </button>
-
-            <button class="date-btn secondary" id="disable-notifications">
-                ❌ Disable All
-            </button>
-        </div>
     </div>
     <div id="page-transition" class="page-transition hidden"></div>
     <div id="focus-indicator" class="focus-indicator hidden">FOCUSED: <span id="focus-name">Moon</span></div>
@@ -333,21 +317,52 @@
 
     </section>
 
-    <!-- Observatory Beacon -->
-    <div id="event-beacon" class="event-beacon">
-        <div class="beacon-dot"></div>
-    </div>
-
     <!-- Intelligence Log Panel -->
     <div id="events-panel" class="events-panel">
         <div class="events-header">
-            <span>ASTRONOMY INTELLIGENCE LOG</span>
-            <button id="close-events" class="panel-close-btn">✕</button>
+            <span>INTELLIGENCE LOG</span>
+            <div class="header-actions">
+                <button id="btn-events-settings" class="panel-icon-btn" title="Notification Settings">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z">
+                        </path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                </button>
+                <button id="close-events" class="panel-icon-btn">✕</button>
+            </div>
         </div>
 
-        <div id="events-year-label" class="events-year-label"></div>
+        <div id="events-main-view" class="panel-content-view">
+            <div id="events-year-label" class="events-year-label"></div>
+            <div id="events-container" class="events-container"></div>
+        </div>
 
-        <div id="events-container" class="events-container"></div>
+        <div id="events-settings-view" class="panel-content-view hidden">
+            <div class="settings-container">
+                <h3 class="settings-title">Notification Preferences</h3>
+
+                <div class="setting-row">
+                    <button class="date-btn secondary full-width" id="enable-daily-brief">
+                        🌅 Daily Morning Brief (7 AM IST)
+                    </button>
+                </div>
+
+                <div class="setting-row">
+                    <button class="date-btn secondary full-width" id="enable-planet-brief">
+                        🪐 Daily Planet Visibility
+                    </button>
+                </div>
+
+                <div class="setting-row spacer-top">
+                    <button class="date-btn secondary full-width" id="disable-notifications">
+                        ❌ Disable All Alerts
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script type="module" src="./frontend/src/main.js"></script>

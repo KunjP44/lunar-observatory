@@ -1535,50 +1535,6 @@ body.lunar-active .info-card {
         height: auto;
     }
 
-    .event-beacon {
-        top: 48px !important;
-        left: 14px !important;
-        bottom: auto !important;
-        /* clear bottom */
-        right: auto !important;
-        /* clear right */
-
-        position: fixed;
-        z-index: 2000;
-
-        width: 52px;
-        height: 30px !important;
-        padding: 0;
-
-        /* Optimized Glass for Mobile */
-        background: rgba(30, 30, 35, 0.6);
-        backdrop-filter: blur(8px);
-        /* Lower blur for better performance */
-        -webkit-backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 24px;
-
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    /* HIDE TEXT */
-    .event-beacon::after {
-        display: none;
-    }
-
-    /* MAKE DOT BIGGER & GLOWING */
-    .beacon-dot {
-        margin: 0;
-        width: 10px !important;
-        height: 10px !important;
-        background: #FFD778;
-        border-radius: 50%;
-        box-shadow: 0 0 10px 2px rgba(255, 215, 120, 0.8);
-    }
-
-
     /* Animation for Mobile (Slide Up) */
     @keyframes popIn {
         from {
@@ -1634,42 +1590,6 @@ body.lunar-active .info-card {
 body.events-open canvas {
     filter: blur(4px) brightness(0.6);
     transition: filter 0.4s ease;
-}
-
-.event-beacon {
-    bottom: 32px !important;
-    height: 44px;
-    position: fixed;
-    left: 32px;
-    z-index: 2000;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 16px;
-
-    background: rgba(28, 28, 30, 0.7);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-
-    border: 1px solid rgba(255, 215, 120, 0.3);
-    /* Yellowish border */
-    border-radius: 999px;
-
-    transition: all 0.25s ease;
-}
-
-.event-beacon:hover {
-    background: rgba(255, 215, 120, 0.15);
-    box-shadow: 0 0 15px rgba(255, 215, 120, 0.15);
-    cursor: pointer;
-}
-
-.beacon-dot {
-    width: 6px;
-    height: 6px;
-    background: #FFD778;
-    border-radius: 50%;
-    box-shadow: 0 0 6px rgba(255, 215, 120, 0.6);
 }
 
 /* Optional text label next to the dot */
@@ -1917,6 +1837,83 @@ body.events-open canvas {
 .meta-global {
     font-size: 11px;
     color: rgba(255, 255, 255, 0.5);
+}
+
+
+/* --- Updated Events Panel Header --- */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.panel-icon-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.panel-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+}
+
+.panel-icon-btn svg {
+    pointer-events: none;
+}
+
+/* --- Panel Content Views --- */
+.panel-content-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: fadeIn 0.3s ease;
+}
+
+.panel-content-view.hidden {
+    display: none;
+}
+
+/* --- Settings View Styles --- */
+.settings-container {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.settings-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-tertiary);
+    margin-bottom: 8px;
+}
+
+.full-width {
+    width: 100%;
+    text-align: left;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+}
+
+.spacer-top {
+    margin-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 20px;
 }
 
 /* Notify Button (Inside Item) */

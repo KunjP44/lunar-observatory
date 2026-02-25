@@ -1669,10 +1669,6 @@ async function loadSolarForDate(dateObj) {
 /* =====================================================
    ASTRONOMY INTELLIGENCE LOG
 ===================================================== */
-const beacon = document.getElementById("event-beacon");
-const beaconDot = document.querySelector(".beacon-dot");
-const eventsPanel = document.getElementById("events-panel");
-const closeEventsBtn = document.getElementById("close-events");
 const eventsContainer = document.getElementById("events-container");
 const eventsYearLabel = document.getElementById("events-year-label");
 let currentEventsYear = new Date().getFullYear();
@@ -1682,41 +1678,6 @@ let cachedEvents = [];
 eventsContainer?.addEventListener("wheel", (e) => {
     e.stopPropagation();
 });
-
-/* -------------------------
-   Open / Close Panel
--------------------------- */
-
-beacon?.addEventListener("click", () => {
-    // eventsPanel.classList.remove("hidden");
-    eventsPanel.classList.add("show");
-    document.body.classList.add("events-open");
-});
-
-closeEventsBtn?.addEventListener("click", () => {
-    eventsPanel.classList.remove("show");
-    document.body.classList.remove("events-open");
-});
-
-/* -------------------------
-   Beacon Logic
--------------------------- */
-
-async function updateBeaconState() {
-    try {
-        // const res = await fetch(`/api/events/upcoming?days=3`);
-        const res = await fetch(`${API_BASE}/api/events/upcoming?days=3`);
-        const data = await res.json();
-
-        if (data.has_major_within_3_days) {
-            beaconDot.classList.add("active");
-        } else {
-            beaconDot.classList.remove("active");
-        }
-    } catch (err) {
-        console.error("Beacon error:", err);
-    }
-}
 
 /* -------------------------
    Load Year Events
@@ -1875,8 +1836,6 @@ function formatDate(dateStr) {
 /* -------------------------
    Initialize
 -------------------------- */
-
-updateBeaconState();
 loadEventsForYear(currentEventsYear);
 
 // ================= PLANET VISIBILITY ================
@@ -1947,36 +1906,60 @@ function capitalize(str) {
 }
 
 
-// ================= Notifications UI =================
+// ================= Notifications UI & Event Panel Logic =================
 
 const notifBtn = document.getElementById("btn-notifications");
-const notifPopup = document.getElementById("notification-popup");
+const eventsPanel = document.getElementById("events-panel");
+const closeEventsBtn = document.getElementById("close-events");
+const settingsBtn = document.getElementById("btn-events-settings");
 
+// Views inside the panel
+const eventsMainView = document.getElementById("events-main-view");
+const eventsSettingsView = document.getElementById("events-settings-view");
+
+// 1. OPEN PANEL (Clicking the Bell Icon)
 notifBtn.addEventListener("click", () => {
-    notifPopup.classList.toggle("hidden");
+    // Reset to main view when opening
+    eventsMainView.classList.remove("hidden");
+    eventsSettingsView.classList.add("hidden");
+
+    eventsPanel.classList.add("show");
+    document.body.classList.add("events-open");
 });
 
-// Close if clicked outside
-document.addEventListener("click", (e) => {
-    if (!notifBtn.contains(e.target) && !notifPopup.contains(e.target)) {
-        notifPopup.classList.add("hidden");
+// 2. CLOSE PANEL
+closeEventsBtn.addEventListener("click", () => {
+    eventsPanel.classList.remove("show");
+    document.body.classList.remove("events-open");
+});
+
+// 3. TOGGLE SETTINGS (Clicking the Gear Icon)
+settingsBtn.addEventListener("click", () => {
+    const isSettingsOpen = !eventsSettingsView.classList.contains("hidden");
+
+    if (isSettingsOpen) {
+        // Go back to Events
+        eventsSettingsView.classList.add("hidden");
+        eventsMainView.classList.remove("hidden");
+    } else {
+        // Show Settings
+        eventsMainView.classList.add("hidden");
+        eventsSettingsView.classList.remove("hidden");
     }
 });
 
-// Enable Daily Morning Brief
-document.getElementById("enable-daily-brief").addEventListener("click", () => {
+// 4. NOTIFICATION LOGIC (Settings Buttons)
+document.getElementById("enable-daily-brief")?.addEventListener("click", () => {
     localStorage.setItem("dailyBrief", "true");
-    alert("🌅 Daily Morning Brief Enabled (7 AM IST)");
+    alert("🌅 Daily Morning Brief Enabled");
 });
 
-// Enable Planet Visibility
-document.getElementById("enable-planet-brief").addEventListener("click", () => {
+document.getElementById("enable-planet-brief")?.addEventListener("click", () => {
     localStorage.setItem("planetBrief", "true");
     alert("🪐 Daily Planet Visibility Enabled");
 });
 
-// Disable All
-document.getElementById("disable-notifications").addEventListener("click", () => {
+document.getElementById("disable-notifications")?.addEventListener("click", () => {
     localStorage.removeItem("dailyBrief");
     localStorage.removeItem("planetBrief");
     alert("Notifications Disabled");
@@ -2031,7 +2014,7 @@ async function setupPush() {
         await navigator.serviceWorker.ready;
 
         const token = await getToken(messaging, {
-            vapidKey: "BFZ0767uqrN5u5Ey0HmcKJYrUgbDchsWXChR1PSezmLQToHkgAD4eImqTtFdi2oA1MKBJB9lJ31Pr2SPmbBu8cU ",
+            vapidKey: "BFZ0767uqrN5u5Ey0HmcKJYrUgbDchsWXChR1PSezmLQToHkgAD4eImqTtFdi2oA1MKBJB9lJ31Pr2SPmbBu8cU",
             serviceWorkerRegistration: registration
         });
 
