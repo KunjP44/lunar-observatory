@@ -2031,7 +2031,7 @@ async function setupPush() {
         await navigator.serviceWorker.ready;
 
         const token = await getToken(messaging, {
-            vapidKey: "YOUR_VAPID_KEY",
+            vapidKey: "BFZ0767uqrN5u5Ey0HmcKJYrUgbDchsWXChR1PSezmLQToHkgAD4eImqTtFdi2oA1MKBJB9lJ31Pr2SPmbBu8cU ",
             serviceWorkerRegistration: registration
         });
 
