@@ -11,18 +11,44 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-
 const messaging = firebase.messaging();
 
-// Optional: Handle background messages specifically if needed
+// BACKGROUND MESSAGE HANDLER
 messaging.onBackgroundMessage((payload) => {
     console.log('[firebase-messaging-sw.js] Received background message ', payload);
 
+    // This handler normally only runs when the app is in the background.
+    // However, to be absolutely safe against double notifications, 
+    // we let the browser handle the default display if we don't return a promise.
+    //
+    // IF YOU WANT TO CUSTOMIZE IT:
     const notificationTitle = payload.notification.title;
     const notificationOptions = {
         body: payload.notification.body,
         icon: payload.notification.icon || '/lunar-observatory/frontend/assets/notification-icon.png'
     };
 
-    self.registration.showNotification(notificationTitle, notificationOptions);
+    // return self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
+// CLICK HANDLER (Focus or Open Window)
+self.addEventListener('notificationclick', function (event) {
+    console.log('[firebase-messaging-sw.js] Notification click Received.');
+    event.notification.close();
+
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (clientList) {
+            // If a tab is already open, focus it
+            for (var i = 0; i < clientList.length; i++) {
+                var client = clientList[i];
+                if (client.url.includes('/lunar-observatory/') && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+            // Otherwise open a new one
+            if (clients.openWindow) {
+                return clients.openWindow('/lunar-observatory/');
+            }
+        })
+    );
 });
