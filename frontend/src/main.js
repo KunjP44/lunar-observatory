@@ -2063,8 +2063,13 @@ async function setupPush() {
     }
 }
 
-// Initialize
-setupPush();
+document.getElementById("enable-daily-brief")?.addEventListener("click", async () => {
+    // Request permission explicitly here
+    await setupPush();
+
+    localStorage.setItem("dailyBrief", "true");
+    alert("🌅 Daily Morning Brief Enabled");
+});
 
 // 4. HANDLE FOREGROUND MESSAGES (The Mobile Fix)
 onMessage(messaging, (payload) => {
