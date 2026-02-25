@@ -14,6 +14,8 @@ earth = None
 sun = None
 PLANETS = None
 
+VISIBILITY_CACHE = {}
+
 
 def get_skyfield():
     global eph, ts, earth, sun, PLANETS

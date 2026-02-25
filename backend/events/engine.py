@@ -112,6 +112,9 @@ def is_opposition(planet_name: str, d: date) -> bool:
 def extract_opposition_events(d: date) -> List[Event]:
     events = []
 
+    # Ensure Skyfield is initialized
+    eph, ts, sun, earth, PLANETS = get_skyfield()
+
     for name in PLANETS:
         if is_opposition(name, d):
             events.append(

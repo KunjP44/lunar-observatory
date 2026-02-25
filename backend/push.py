@@ -4,7 +4,13 @@ from firebase_admin import credentials, messaging
 import os
 import json
 
-from backend.database import save_token, get_all_tokens, delete_token
+from backend.database import (
+    save_token,
+    get_all_tokens,
+    delete_token,
+    get_daily_tokens,
+    get_planet_tokens,
+)
 
 # Initialize Firebase once
 if not firebase_admin._apps:
@@ -24,7 +30,7 @@ if not firebase_admin._apps:
     firebase_admin.initialize_app(cred)
 
 
-def register_token(token: str):
+def register_token(token: str, daily_brief: bool = False, planet_brief: bool = False):
     tokens = get_all_tokens()
 
     # Remove old tokens with same prefix (same device)
@@ -34,11 +40,17 @@ def register_token(token: str):
         if t.split(":")[0] == prefix and t != token:
             delete_token(t)
 
-    save_token(token)
+    save_token(token, daily_brief, planet_brief)
 
 
-def send_notification(title: str, body: str):
-    tokens = get_all_tokens()
+def send_notification(title: str, body: str, category: str = "all"):
+
+    if category == "daily":
+        tokens = get_daily_tokens()
+    elif category == "planet":
+        tokens = get_planet_tokens()
+    else:
+        tokens = get_all_tokens()
 
     print("Sending to tokens:", tokens)
 

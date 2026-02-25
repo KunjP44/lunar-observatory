@@ -183,7 +183,7 @@ const currentTargetPos = new THREE.Vector3(0, 0, 0);
 let cameraMode = "default";
 const DEFAULT_RADIUS = 180;
 const DEFAULT_MIN_RADIUS = 60;
-const DEFAULT_MAX_RADIUS = 2000;
+const DEFAULT_MAX_RADIUS = 3500;
 let focusMinRadius = 14;
 let focusMaxRadius = 120;
 let uiPage = "solar";
@@ -628,11 +628,11 @@ canvas.addEventListener("dblclick", (e) => {
 window.addEventListener("wheel", (e) => {
 
     // STOP camera zoom if events panel is open
-    if (eventsPanel.classList.contains("show")) return;
+    if (eventsPanel && eventsPanel.classList.contains("show")) return;
 
     if (uiPage === "lunar") return;
 
-    targetRadius *= 1 + e.deltaY * 0.001;
+    targetRadius *= 1 + e.deltaY * 0.001; // higher value higher zoom speed
 
     const min = cameraMode === "focus" ? focusMinRadius : DEFAULT_MIN_RADIUS;
     const max = cameraMode === "focus" ? focusMaxRadius : DEFAULT_MAX_RADIUS;
@@ -652,15 +652,13 @@ canvas.addEventListener("touchstart", (e) => {
         const DOUBLE_TAP_DELAY = 300; // ms
 
         // Check if this tap is close in time to the last one
-        if (now - lastTap < DOUBLE_TAP_DELAY) {
-            // --- DOUBLE TAP DETECTED! ---
-            e.preventDefault(); // Stop browser zoom
+        if (now - lastTap < DOUBLE_TAP_DELAY && !isDragging && !isPinching) {
+            e.preventDefault();
             handleInputFocus(e.touches[0].clientX, e.touches[0].clientY);
-            lastTap = 0; // Reset
+            lastTap = 0;
         } else {
-            // Single Tap (start rotating)
             lastTap = now;
-            isDragging = true;
+            isDragging = false;
             isPinching = false;
             touchStart.x = e.touches[0].clientX;
             touchStart.y = e.touches[0].clientY;
@@ -670,6 +668,7 @@ canvas.addEventListener("touchstart", (e) => {
     else if (e.touches.length === 2) {
         isDragging = false;
         isPinching = true;
+        lastTap = 0;
         const dx = e.touches[0].clientX - e.touches[1].clientX;
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         lastTouchDist = Math.sqrt(dx * dx + dy * dy);
@@ -682,13 +681,24 @@ canvas.addEventListener("touchmove", (e) => {
 
     // 1. Rotation logic (Strictly 1 finger AND NOT PINCHING)
     if (e.touches.length === 1 && !isPinching) {
+
         const dx = e.touches[0].clientX - touchStart.x;
         const dy = e.touches[0].clientY - touchStart.y;
 
-        const SENSITIVITY = 0.004; // Slightly lower sensitivity for smoother feel
+        const MOVE_THRESHOLD = 3; // 👈 critical
+
+        // Ignore micro-movements
+        if (Math.abs(dx) < MOVE_THRESHOLD && Math.abs(dy) < MOVE_THRESHOLD) {
+            return;
+        }
+
+        isDragging = true;
+
+        const SENSITIVITY = 0.004;
 
         if (cameraMode === "lunar") {
-            if (planetMeshes.moon) planetMeshes.moon.rotation.y += dx * SENSITIVITY;
+            if (planetMeshes.moon)
+                planetMeshes.moon.rotation.y += dx * SENSITIVITY;
         } else {
             targetTheta -= dx * SENSITIVITY;
             targetPhi -= dy * SENSITIVITY;
@@ -709,7 +719,7 @@ canvas.addEventListener("touchmove", (e) => {
         const currentDist = Math.sqrt(dx * dx + dy * dy);
 
         const delta = lastTouchDist - currentDist;
-        const zoomSpeed = 0.5;
+        const zoomSpeed = 1.2;  // higher value for higher zoom speed
 
         targetRadius += delta * zoomSpeed;
 
@@ -1024,7 +1034,6 @@ closeBtn?.addEventListener("click", () => {
 // ============ Logic for transforming reset to exit ==============
 function updateResetButton(mode) {
     const label = document.getElementById("reset-label");
-
     if (!label) return;
 
     if (mode === "solar") {
@@ -1107,6 +1116,8 @@ function enterLunarScene() {
 
     document.body.classList.add("lunar-active");
     document.getElementById("moon-mode")?.classList.remove("hidden");
+    // Show the planet visibility section when entering Lunar mode
+    document.getElementById("planet-visibility-section")?.classList.remove("hidden");
     lunarIntro = true;
     lunarIntroProgress = 0;
     cameraMode = "lunar";
@@ -1142,6 +1153,8 @@ function exitLunarScene() {
     if (!planetMeshes.moon || !planetMeshes.Earth) return;
 
     document.body.classList.remove("lunar-active");
+    // Hide it when going back to Solar
+    document.getElementById("planet-visibility-section")?.classList.add("hidden");
 
     // Re-parent Moon to Earth
     planetMeshes.Earth.add(planetMeshes.moon);
@@ -1669,15 +1682,77 @@ async function loadSolarForDate(dateObj) {
 /* =====================================================
    ASTRONOMY INTELLIGENCE LOG
 ===================================================== */
+
+const notifBtn = document.getElementById("btn-notifications");
+const eventsPanel = document.getElementById("events-panel");
+const closeEventsBtn = document.getElementById("close-events");
+
+// --- FIXED: Define missing variables here to prevent ReferenceError ---
 const eventsContainer = document.getElementById("events-container");
 const eventsYearLabel = document.getElementById("events-year-label");
 let currentEventsYear = new Date().getFullYear();
 let availableYears = [];
 let cachedEvents = [];
+// ---------------------------------------------------------------------
 
-eventsContainer?.addEventListener("wheel", (e) => {
-    e.stopPropagation();
-});
+// View Toggle Buttons (Icons in the panel header)
+const viewEventsBtn = document.getElementById("btn-view-events");
+const viewSettingsBtn = document.getElementById("btn-view-settings");
+
+// View Containers
+const viewNotifications = document.getElementById("view-notifications");
+const viewEventsLog = document.getElementById("view-events-log");
+const viewSettings = document.getElementById("view-settings");
+
+// --- FIXED: Add Safety Checks (if statements) to prevent crashes ---
+
+// 1. OPEN PANEL
+if (notifBtn && eventsPanel) {
+    notifBtn?.addEventListener("click", () => {
+
+        const hasNotifications =
+            document.querySelector("#notifications-container .notification-item");
+
+        if (hasNotifications) {
+            viewNotifications?.classList.remove("hidden");
+            viewEventsLog?.classList.add("hidden");
+        } else {
+            viewEventsLog?.classList.remove("hidden");
+            viewNotifications?.classList.add("hidden");
+        }
+
+        viewSettings?.classList.add("hidden");
+
+        eventsPanel.classList.add("show");
+        document.body.classList.add("events-open");
+    });
+}
+
+// 2. CLOSE PANEL
+if (closeEventsBtn && eventsPanel) {
+    closeEventsBtn?.addEventListener("click", () => {
+        eventsPanel.classList.remove("show");
+        document.body.classList.remove("events-open");
+    });
+}
+
+// 3. SWITCH BETWEEN VIEWS
+if (viewEventsBtn) {
+    viewEventsBtn.addEventListener("click", () => {
+        if (viewEventsLog) viewEventsLog.classList.remove("hidden");
+        if (viewNotifications) viewNotifications.classList.add("hidden");
+        if (viewSettings) viewSettings.classList.add("hidden");
+    });
+}
+
+if (viewSettingsBtn) {
+    viewSettingsBtn.addEventListener("click", () => {
+        if (viewSettings) viewSettings.classList.remove("hidden");
+        if (viewEventsLog) viewEventsLog.classList.add("hidden");
+        if (viewNotifications) viewNotifications.classList.add("hidden");
+    });
+}
+
 
 /* -------------------------
    Load Year Events
@@ -1690,7 +1765,8 @@ async function loadPlanetVisibilityForDate(dateObj) {
         planetList.innerHTML =
             '<div style="text-align:center; padding:20px; opacity:0.5; font-size:12px;">Calibrating sensors...</div>';
 
-        const res = await fetch(`${API_BASE}/api/visibility?date=${iso}`);
+        // FIX: Added slash after "visibility" to stop 307 Redirects
+        const res = await fetch(`${API_BASE}/api/visibility/?date=${iso}`);
         const data = await res.json();
 
         renderPlanetVisibility(data);
@@ -1719,12 +1795,11 @@ async function loadEventsForYear(year) {
 /* -------------------------
    Render Events
 -------------------------- */
-
 function renderEvents(events) {
     eventsContainer.innerHTML = "";
 
     if (!events.length) {
-        eventsContainer.innerHTML = `<div style="opacity:0.5">No major events detected.</div>`;
+        eventsContainer.innerHTML = `<div class="empty-state">No major events detected.</div>`;
         return;
     }
 
@@ -1733,43 +1808,49 @@ function renderEvents(events) {
         div.className = "event-item";
 
         const accent = getAccentColor(ev.type);
-
-        const regions = ev.visibility_regions?.join(" • ") || "—";
+        const regions = ev.visibility_regions?.join(" • ") || "Global";
 
         div.innerHTML = `
-            <div class="event-date">${formatDate(ev.date)}</div>
-
-            <div class="event-title"
-                style="border-left: 3px solid ${accent}; padding-left: 12px;">
-                ${ev.title}
-            </div>
-
+            <div class="event-date" style="background: ${accent}; color: #fff;">${formatDate(ev.date)}</div>
+            <div class="event-title">${ev.title}</div>
             <div class="event-meta">
                 <span class="meta-india ${ev.visible_from_india ? "visible" : "hidden-vis"}">
-                    ${ev.visible_from_india ? "Visible in India" : "Not visible in India"}
+                    ${ev.visible_from_india ? "✓ Visible in India" : "× Not visible in India"}
                 </span>
-                <div class="meta-global">
-                    ${regions}
-                </div>
+                <div class="meta-global">${regions}</div>
             </div>
-
-            <button class="notify-btn">
-                🔔 Notify Me
-            </button>
+            <button class="notify-btn">🔔 Notify Me</button>
         `;
 
         eventsContainer.appendChild(div);
-        const notifyBtn = div.querySelector(".notify-btn");
 
-        notifyBtn.addEventListener("click", () => {
-            notifyBtn.classList.toggle("active");
+        div.querySelector(".notify-btn").onclick = async (e) => {
 
-            if (notifyBtn.classList.contains("active")) {
-                notifyBtn.textContent = "✓ Reminder Set";
-            } else {
-                notifyBtn.textContent = "🔔 Notify Me";
+            await enablePushIfNeeded();
+
+            if (!hasNotificationPermission()) {
+                alert("Enable notifications first in Settings.");
+                return;
             }
-        });
+
+            e.target.classList.toggle("active");
+
+            if (e.target.classList.contains("active")) {
+                e.target.textContent = "✓ Reminder Set";
+
+                // Optional: store event reminder
+                let reminders = JSON.parse(localStorage.getItem("eventReminders") || "[]");
+                reminders.push(ev.id);
+                localStorage.setItem("eventReminders", JSON.stringify(reminders));
+
+            } else {
+                e.target.textContent = "🔔 Notify Me";
+
+                let reminders = JSON.parse(localStorage.getItem("eventReminders") || "[]");
+                reminders = reminders.filter(id => id !== ev.id);
+                localStorage.setItem("eventReminders", JSON.stringify(reminders));
+            }
+        };
     });
 }
 
@@ -1906,49 +1987,9 @@ function capitalize(str) {
 }
 
 
-// ================= Notifications UI & Event Panel Logic =================
-
-const notifBtn = document.getElementById("btn-notifications");
-const eventsPanel = document.getElementById("events-panel");
-const closeEventsBtn = document.getElementById("close-events");
-const settingsBtn = document.getElementById("btn-events-settings");
-
-// Views inside the panel
-const eventsMainView = document.getElementById("events-main-view");
-const eventsSettingsView = document.getElementById("events-settings-view");
-
-// 1. OPEN PANEL (Clicking the Bell Icon)
-notifBtn.addEventListener("click", () => {
-    // Reset to main view when opening
-    eventsMainView.classList.remove("hidden");
-    eventsSettingsView.classList.add("hidden");
-
-    eventsPanel.classList.add("show");
-    document.body.classList.add("events-open");
-});
-
-// 2. CLOSE PANEL
-closeEventsBtn.addEventListener("click", () => {
-    eventsPanel.classList.remove("show");
-    document.body.classList.remove("events-open");
-});
-
-// 3. TOGGLE SETTINGS (Clicking the Gear Icon)
-settingsBtn.addEventListener("click", () => {
-    const isSettingsOpen = !eventsSettingsView.classList.contains("hidden");
-
-    if (isSettingsOpen) {
-        // Go back to Events
-        eventsSettingsView.classList.add("hidden");
-        eventsMainView.classList.remove("hidden");
-    } else {
-        // Show Settings
-        eventsMainView.classList.add("hidden");
-        eventsSettingsView.classList.remove("hidden");
-    }
-});
-
 // 4. NOTIFICATION LOGIC (Settings Buttons)
+
+
 document.getElementById("enable-daily-brief")?.addEventListener("click", () => {
     localStorage.setItem("dailyBrief", "true");
     alert("🌅 Daily Morning Brief Enabled");
@@ -1960,11 +2001,25 @@ document.getElementById("enable-planet-brief")?.addEventListener("click", () => 
 });
 
 document.getElementById("disable-notifications")?.addEventListener("click", () => {
+    // 1. Remove Data
     localStorage.removeItem("dailyBrief");
     localStorage.removeItem("planetBrief");
+    localStorage.removeItem("eventReminders");
+    localStorage.removeItem("fcm_token");
+    localStorage.removeItem("pushRegistered");
+
+    // 2. Visual Reset (Now this works because variables are defined above)
+    if (dailyToggle) dailyToggle.checked = false;
+    if (planetToggle) planetToggle.checked = false;
+
+    // 3. Reset Bell Buttons
+    document.querySelectorAll(".notify-btn").forEach(btn => {
+        btn.classList.remove("active");
+        btn.textContent = "🔔 Notify Me";
+    });
+
     alert("Notifications Disabled");
 });
-
 
 // Init Data
 (async () => {
@@ -2021,9 +2076,13 @@ async function setupPush() {
         console.log(`Registering SW at: ${swPath}`);
 
         // 2. REGISTER SERVICE WORKER
-        const registration = await navigator.serviceWorker.register(swPath, {
-            scope: './'
-        });
+        let registration = await navigator.serviceWorker.getRegistration();
+
+        if (!registration) {
+            registration = await navigator.serviceWorker.register(swPath, {
+                scope: './'
+            });
+        }
 
         // Wait for it to be ready to avoid "failed to execute subscribe" errors
         await navigator.serviceWorker.ready;
@@ -2048,7 +2107,11 @@ async function setupPush() {
             await fetch(`${API_BASE}/api/push/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ token: token }) // ✅ THIS IS CORRECT
+                body: JSON.stringify({
+                    token: token,
+                    daily_brief: localStorage.getItem("dailyBrief") === "true",
+                    planet_brief: localStorage.getItem("planetBrief") === "true"
+                }) // ✅ THIS IS CORRECT
             });
 
             localStorage.setItem("fcm_token", token);
@@ -2063,13 +2126,91 @@ async function setupPush() {
     }
 }
 
-document.getElementById("enable-daily-brief")?.addEventListener("click", async () => {
-    // Request permission explicitly here
-    await setupPush();
+// ================= CLEAN NOTIFICATION TOGGLE SYSTEM =================
 
-    localStorage.setItem("dailyBrief", "true");
-    alert("🌅 Daily Morning Brief Enabled");
+const dailyToggle = document.getElementById("toggle-daily-brief");
+const planetToggle = document.getElementById("toggle-planet-brief");
+
+// Sync toggle UI from localStorage on load
+function syncNotificationUI() {
+    if (dailyToggle) {
+        dailyToggle.checked = localStorage.getItem("dailyBrief") === "true";
+    }
+    if (planetToggle) {
+        planetToggle.checked = localStorage.getItem("planetBrief") === "true";
+    }
+    if (!hasNotificationPermission()) {
+        localStorage.removeItem("dailyBrief");
+        localStorage.removeItem("planetBrief");
+    }
+}
+
+// Check permission status
+function hasNotificationPermission() {
+    return Notification.permission === "granted";
+}
+
+// Enable Push (only when needed)
+let pushInitializing = false;
+async function enablePushIfNeeded() {
+    if (pushInitializing) return;
+
+    if (!hasNotificationPermission()) {
+        pushInitializing = true;
+        await setupPush();
+        pushInitializing = false;
+    }
+}
+
+dailyToggle?.addEventListener("change", async (e) => {
+
+    if (e.target.checked) {
+
+        // ✅ Save state FIRST (before permission flow)
+        localStorage.setItem("dailyBrief", "true");
+
+        await enablePushIfNeeded();
+
+        if (!hasNotificationPermission()) {
+            localStorage.removeItem("dailyBrief");
+            e.target.checked = false;
+            return;
+        }
+
+        console.log("Daily Brief Enabled");
+
+    } else {
+        localStorage.removeItem("dailyBrief");
+        console.log("Daily Brief Disabled");
+    }
 });
+
+// PLANET BRIEF TOGGLE
+planetToggle?.addEventListener("change", async (e) => {
+
+    if (e.target.checked) {
+
+        // ✅ Save first
+        localStorage.setItem("planetBrief", "true");
+
+        await enablePushIfNeeded();
+
+        if (!hasNotificationPermission()) {
+            localStorage.removeItem("planetBrief");
+            e.target.checked = false;
+            return;
+        }
+
+        console.log("Planet Brief Enabled");
+
+    } else {
+        localStorage.removeItem("planetBrief");
+        console.log("Planet Brief Disabled");
+    }
+});
+
+// Run once at startup
+syncNotificationUI();
 
 onMessage(messaging, (payload) => {
     console.log("Foreground message received:", payload);

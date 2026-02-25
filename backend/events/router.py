@@ -57,6 +57,10 @@ def get_next_major_event():
 
 @router.get("/year/{year}", response_model=List[Event])
 def get_events_for_year(year: int):
+
+    # Lazy generation (no cold start)
     if year not in EVENT_CACHE:
-        return []
+        print(f"Generating events for {year}...")
+        EVENT_CACHE[year] = generate_events_for_year(year)
+
     return sorted(EVENT_CACHE[year], key=lambda e: e.date)

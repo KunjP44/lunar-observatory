@@ -2,13 +2,29 @@ name: Morning Brief
 
 on:
   schedule:
-    # 8:00 AM IST = 2:30 AM UTC
-    - cron: "30 2 * * *"
+    - cron: "30 2 * * *"   # 8:00 AM IST
   workflow_dispatch:
 
 jobs:
   send-brief:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Call Morning Brief API
-        run: curl https://lunar-observatory.onrender.com/api/push/morning
+      - name: Wait for backend to wake
+        run: |
+          echo "Checking backend readiness..."
+          for i in {1..8}; do
+            status=$(curl -s -o /dev/null -w "%{http_code}" https://lunar-observatory.onrender.com/)
+            echo "Attempt $i → HTTP $status"
+
+            if [ "$status" = "200" ]; then
+              echo "Backend ready."
+              break
+            fi
+
+            sleep 20
+          done
+
+      - name: Send morning brief
+        run: |
+          curl -s https://lunar-observatory.onrender.com/api/push/morning
