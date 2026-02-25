@@ -25,6 +25,15 @@ if not firebase_admin._apps:
 
 
 def register_token(token: str):
+    tokens = get_all_tokens()
+
+    # Remove old tokens with same prefix (same device)
+    prefix = token.split(":")[0]
+
+    for t in tokens:
+        if t.split(":")[0] == prefix and t != token:
+            delete_token(t)
+
     save_token(token)
 
 
@@ -35,17 +44,16 @@ def send_notification(title: str, body: str):
 
     for token in tokens:
         message = messaging.Message(
-            notification=messaging.Notification(
-                title=title,
-                body=body,
-            ),
             webpush=messaging.WebpushConfig(
                 notification=messaging.WebpushNotification(
+                    title=title,
+                    body=body,
                     icon="https://kunjp44.github.io/lunar-observatory/frontend/assets/notification-icon.png",
                 )
             ),
             token=token,
         )
+
         try:
             messaging.send(message)
 
