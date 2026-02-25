@@ -2007,11 +2007,9 @@ async function setupPush() {
         const permission = await Notification.requestPermission();
         if (permission !== "granted") return;
 
-        const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js', {
-            scope: './'
-        });
-
-        await navigator.serviceWorker.ready;
+        const registration = await navigator.serviceWorker.register(
+            "/firebase-messaging-sw.js"
+        );
 
         const token = await getToken(messaging, {
             vapidKey: "BFZ0767uqrN5u5Ey0HmcKJYrUgbDchsWXChR1PSezmLQToHkgAD4eImqTtFdi2oA1MKBJB9lJ31Pr2SPmbBu8cU",
