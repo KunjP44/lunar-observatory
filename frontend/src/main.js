@@ -2048,7 +2048,7 @@ async function setupPush() {
             await fetch(`${API_BASE}/api/push/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(token)
+                body: JSON.stringify({ token: token }) // ✅ THIS IS CORRECT
             });
 
             localStorage.setItem("fcm_token", token);
