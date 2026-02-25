@@ -13,18 +13,29 @@ INDIA_LAT = 23.0225
 INDIA_LON = 72.5714
 
 
-# Load ephemeris once
-eph = load("de421.bsp")
-ts = load.timescale()
+eph = None
+ts = None
+sun = None
+earth = None
+PLANETS = None
 
-sun = eph["sun"]
-earth = eph["earth"]
 
-PLANETS = {
-    "mars": eph["mars"],
-    "jupiter": eph["jupiter_barycenter"],
-    "saturn": eph["saturn_barycenter"],
-}
+def get_skyfield():
+    global eph, ts, sun, earth, PLANETS
+
+    if eph is None:
+        eph = load("de421.bsp")
+        ts = load.timescale(builtin=True)
+        sun = eph["sun"]
+        earth = eph["earth"]
+
+        PLANETS = {
+            "mars": eph["mars"],
+            "jupiter": eph["jupiter_barycenter"],
+            "saturn": eph["saturn_barycenter"],
+        }
+
+    return eph, ts, sun, earth, PLANETS
 
 
 def extract_moon_events(d: date) -> List[Event]:
@@ -85,16 +96,17 @@ def extract_moon_events(d: date) -> List[Event]:
 
 
 def is_opposition(planet_name: str, d: date) -> bool:
+    eph, ts, sun, earth, PLANETS = get_skyfield()
+
     dt = datetime(d.year, d.month, d.day)
     t = ts.utc(dt.year, dt.month, dt.day)
 
     planet = PLANETS[planet_name]
 
-    # Earth observing planet
     astrometric = earth.at(t).observe(planet)
     elongation = astrometric.separation_from(earth.at(t).observe(sun)).degrees
 
-    return abs(elongation - 180) < 1.0  # 1° tolerance
+    return abs(elongation - 180) < 1.0
 
 
 def extract_opposition_events(d: date) -> List[Event]:

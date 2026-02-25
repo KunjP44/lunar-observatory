@@ -8,20 +8,33 @@ import numpy as np
 INDIA_LAT = 23.0225
 INDIA_LON = 72.5714
 
-# Load ephemeris once
-eph = load("de421.bsp")
-ts = load.timescale()
+eph = None
+ts = None
+earth = None
+sun = None
+PLANETS = None
 
-earth = eph["earth"]
-sun = eph["sun"]
 
-PLANETS = {
-    "mercury": eph["mercury"],
-    "venus": eph["venus"],
-    "mars": eph["mars"],
-    "jupiter": eph["jupiter_barycenter"],
-    "saturn": eph["saturn_barycenter"],
-}
+def get_skyfield():
+    global eph, ts, earth, sun, PLANETS
+
+    if eph is None:
+        eph = load("de421.bsp")
+        ts = load.timescale(builtin=True)
+
+        earth = eph["earth"]
+        sun = eph["sun"]
+
+        PLANETS = {
+            "mercury": eph["mercury"],
+            "venus": eph["venus"],
+            "mars": eph["mars"],
+            "jupiter": eph["jupiter_barycenter"],
+            "saturn": eph["saturn_barycenter"],
+        }
+
+    return eph, ts, earth, sun, PLANETS
+
 
 PLANET_MAGNITUDES = {
     "mercury": -0.4,
@@ -38,6 +51,8 @@ def to_ist_string(t):
 
 
 def compute_visibility(date_str: str):
+
+    eph, ts, earth, sun, PLANETS = get_skyfield()
 
     d = datetime.strptime(date_str, "%Y-%m-%d")
     observer = earth + wgs84.latlon(INDIA_LAT, INDIA_LON)

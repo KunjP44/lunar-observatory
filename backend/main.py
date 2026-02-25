@@ -34,9 +34,6 @@ def moon_endpoint(d: str, lat: float | None = None, lon: float | None = None):
     return get_ui_moon_data(d, lat, lon)
 
 
-init_event_cache()
-
-
 class TokenModel(BaseModel):
     token: str
 
@@ -79,6 +76,7 @@ def morning_brief():
     send_notification("Morning Sky Update", body)
 
     return {"status": "morning sent"}
+
 
 @api.get("/")
 def health():
