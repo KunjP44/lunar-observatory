@@ -4,6 +4,8 @@ from typing import List
 
 from backend.events.engine import generate_events_for_year
 from backend.events.models import Event
+import asyncio
+
 
 router = APIRouter()
 
@@ -56,11 +58,19 @@ def get_next_major_event():
 
 
 @router.get("/year/{year}", response_model=List[Event])
-def get_events_for_year(year: int):
+async def get_events_for_year(year: int):
 
-    # Lazy generation (no cold start)
-    if year not in EVENT_CACHE:
-        print(f"Generating events for {year}...")
-        EVENT_CACHE[year] = generate_events_for_year(year)
+    if year in EVENT_CACHE:
+        return sorted(EVENT_CACHE[year], key=lambda e: e.date)
 
-    return sorted(EVENT_CACHE[year], key=lambda e: e.date)
+    print(f"⚡ Background generating events for {year}...")
+
+    async def generate():
+        result = await asyncio.to_thread(generate_events_for_year, year)
+        EVENT_CACHE[year] = result
+        print(f"✅ Events ready for {year}")
+
+    asyncio.create_task(generate())
+
+    # Return empty immediately (frontend will re-fetch)
+    return []

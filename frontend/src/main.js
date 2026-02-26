@@ -1875,13 +1875,17 @@ async function loadPlanetVisibilityForDate(dateObj) {
 
 async function loadEventsForYear(year) {
     try {
-        // const res = await fetch(`/api/events/year/${year}`);
-        const res = await fetch(`${API_BASE}/api/events/year/${year}`)
+        const res = await fetch(`${API_BASE}/api/events/year/${year}`);
         const events = await res.json();
+
+        if (!events.length) {
+            // Retry after short delay
+            setTimeout(() => loadEventsForYear(year), 2000);
+            return;
+        }
 
         cachedEvents = events;
         renderEvents(events);
-
         renderYearSelector(year);
 
     } catch (err) {
