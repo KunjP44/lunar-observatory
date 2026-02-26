@@ -1775,15 +1775,22 @@ const viewSettings = document.getElementById("view-settings");
 
 // --- FIXED: Add Safety Checks (if statements) to prevent crashes ---
 
+document.getElementById("back-to-notifications-events")?.addEventListener("click", () => {
+    viewNotifications?.classList.remove("hidden");
+    viewEventsLog?.classList.add("hidden");
+    viewSettings?.classList.add("hidden");
+});
+
+document.getElementById("back-to-notifications-settings")?.addEventListener("click", () => {
+    viewNotifications?.classList.remove("hidden");
+    viewEventsLog?.classList.add("hidden");
+    viewSettings?.classList.add("hidden");
+});
+
 // 1. OPEN PANEL
 if (notifBtn && eventsPanel) {
     notifBtn?.addEventListener("click", () => {
         hideNotificationDot();
-
-        // mark all as read
-        let stored = JSON.parse(localStorage.getItem("appNotifications") || "[]");
-        stored = stored.map(n => ({ ...n, read: true }));
-        localStorage.setItem("appNotifications", JSON.stringify(stored));
 
         const hasNotifications =
             document.querySelector("#notifications-container .notification-item");
@@ -2330,6 +2337,8 @@ function hideNotificationDot() {
 
 function addNotificationToPanel(notification) {
 
+    const empty = notificationsContainer.querySelector(".empty-state");
+    if (empty) empty.remove();
     const div = document.createElement("div");
     div.className = "notification-item";
 
@@ -2338,16 +2347,22 @@ function addNotificationToPanel(notification) {
     }
 
     div.innerHTML = `
-        <div style="font-size:14px; font-weight:600;">
-            ${notification.title}
-        </div>
-        <div style="font-size:13px; opacity:0.8; margin-top:6px;">
-            ${notification.body}
-        </div>
-        <div style="font-size:10px; opacity:0.4; margin-top:10px;">
-            ${new Date(notification.time).toLocaleString()}
-        </div>
-    `;
+            <div class="notification-header">
+                <div class="notification-title">${notification.title}</div>
+                <div class="notification-actions">
+                    <button class="notif-read-btn" title="Mark as read"></button>
+                    <button class="notif-delete-btn" title="Delete">✕</button>
+                </div>
+            </div>
+
+            <div class="notification-body">
+                ${notification.body}
+            </div>
+
+            <div class="notification-time">
+                ${new Date(notification.time).toLocaleString()}
+            </div>
+        `;
 
     div.addEventListener("click", () => {
         div.classList.remove("unread");
@@ -2362,6 +2377,50 @@ function addNotificationToPanel(notification) {
         if (!unreadExists) hideNotificationDot();
     });
 
+    const readBtn = div.querySelector(".notif-read-btn");
+    const deleteBtn = div.querySelector(".notif-delete-btn");
+
+    // MARK READ
+    readBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+
+        div.classList.remove("unread");
+
+        let stored = JSON.parse(localStorage.getItem("appNotifications") || "[]");
+        stored = stored.map(n =>
+            n.id === notification.id ? { ...n, read: true } : n
+        );
+        localStorage.setItem("appNotifications", JSON.stringify(stored));
+
+        const unreadExists = stored.some(n => !n.read);
+        if (!unreadExists) hideNotificationDot();
+    });
+
+    // DELETE
+    deleteBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+
+        // 1. Remove from DOM
+        div.remove();
+
+        // 2. Remove from localStorage
+        let stored = JSON.parse(localStorage.getItem("appNotifications") || "[]");
+        stored = stored.filter(n => n.id !== notification.id);
+        localStorage.setItem("appNotifications", JSON.stringify(stored));
+
+        // 3. Update red dot
+        const unreadExists = stored.some(n => !n.read);
+        if (!unreadExists) hideNotificationDot();
+
+        if (stored.length === 0) {
+            notificationsContainer.innerHTML = `
+            <div class="empty-state">
+                <span style="font-size: 24px; display:block; margin-bottom:10px;">🔕</span>
+                No new alerts
+            </div>
+        `;
+        }
+    });
     notificationsContainer.prepend(div);
 }
 

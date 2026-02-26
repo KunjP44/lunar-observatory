@@ -2789,6 +2789,70 @@ input:checked+.slider:before {
     }
 }
 
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notification-title {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.notification-body {
+    font-size: 13px;
+    opacity: 0.8;
+    margin-top: 6px;
+}
+
+.notification-time {
+    font-size: 10px;
+    opacity: 0.4;
+    margin-top: 8px;
+}
+
+.notification-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.notif-read-btn {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.notification-item:not(.unread) .notif-read-btn {
+    background: rgba(120, 200, 255, 0.8);
+    border-color: rgba(120, 200, 255, 1);
+}
+
+.notif-delete-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.notif-delete-btn:hover {
+    color: rgba(255, 80, 80, 0.9);
+}
+
+.panel-back-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
 #btn-notifications {
     position: relative;
 }
