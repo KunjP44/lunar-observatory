@@ -616,6 +616,15 @@ canvas.addEventListener("mousemove", (e) => {
 canvas.addEventListener("dblclick", (e) => {
     if (uiPage !== "solar") return;
 
+    canvas.addEventListener("click", (e) => {
+        if (uiPage !== "solar") return;
+
+        // Ignore click if it was part of a drag
+        if (isDragging) return;
+
+        handleSingleTap(e.clientX, e.clientY);
+    });
+
     pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
     pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
     raycaster.setFromCamera(pointer, camera);
@@ -1059,6 +1068,19 @@ function exitFocus() {
     cameraMode = "default";
     focusObject = null;
     solarPaused = false;
+
+    // 🔥 Reset camera targets properly
+    targetPos.set(0, 0, 0);
+    currentTargetPos.set(0, 0, 0);
+
+    targetTheta = Math.PI / 4;
+    targetPhi = Math.PI / 3;
+
+    theta = targetTheta;
+    phi = targetPhi;
+
+    targetRadius = DEFAULT_RADIUS;
+    currentRadius = DEFAULT_RADIUS;
 
     setSystemVisibility(true);
 
