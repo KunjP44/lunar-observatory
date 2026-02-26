@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from datetime import date, timedelta
 from typing import List
 
+from backend.database import get_event_year, save_event_year
 from backend.events.engine import generate_events_for_year
 from backend.events.models import Event
 import asyncio
@@ -60,17 +61,26 @@ def get_next_major_event():
 @router.get("/year/{year}", response_model=List[Event])
 async def get_events_for_year(year: int):
 
-    if year in EVENT_CACHE:
-        return sorted(EVENT_CACHE[year], key=lambda e: e.date)
+    # 1️⃣ Check persistent DB first
+    db_data = get_event_year(year)
+    if db_data:
+        print(f"📦 Events loaded from DB: {year}")
+        return db_data
 
-    print(f"⚡ Background generating events for {year}...")
+    # 2️⃣ If already computing in memory
+    if year in EVENT_CACHE:
+        return EVENT_CACHE[year]
+
+    print(f"⚡ Computing events for {year} (first time only)...")
 
     async def generate():
         result = await asyncio.to_thread(generate_events_for_year, year)
+
         EVENT_CACHE[year] = result
-        print(f"✅ Events ready for {year}")
+        save_event_year(year, result)
+
+        print(f"✅ Events saved permanently for {year}")
 
     asyncio.create_task(generate())
 
-    # Return empty immediately (frontend will re-fetch)
     return []

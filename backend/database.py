@@ -28,6 +28,16 @@ def init_db():
         """
     )
 
+    # 🔥 Yearly Events persistent cache
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS event_cache (
+            year INTEGER PRIMARY KEY,
+            data TEXT
+        )
+        """
+    )
+
     cursor.execute("PRAGMA table_info(push_tokens)")
 
     columns = [col[1] for col in cursor.fetchall()]
@@ -163,3 +173,36 @@ def cleanup_old_visibility(keep_days: int = 30):
 
     conn.commit()
     conn.close()
+
+
+def save_event_year(year: int, data: list):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        INSERT INTO event_cache (year, data)
+        VALUES (?, ?)
+        ON CONFLICT(year) DO UPDATE SET
+            data = excluded.data
+        """,
+        (year, json.dumps([e.model_dump() for e in data])),
+    )
+
+    conn.commit()
+    conn.close()
+
+
+def get_event_year(year: int):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT data FROM event_cache WHERE year = ?", (year,))
+    row = cursor.fetchone()
+
+    conn.close()
+
+    if row:
+        return json.loads(row[0])
+
+    return None

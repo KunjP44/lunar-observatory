@@ -11,7 +11,7 @@ from datetime import date, timedelta
 from backend.visibility.engine import compute_visibility, VISIBILITY_CACHE
 from backend.moon.calendar import get_ui_moon_data
 from backend.solar.router import router as solar_router
-from backend.events.router import router as events_router, init_event_cache
+from backend.events.router import router as events_router
 from backend.visibility.router import router as visibility_router
 from backend.push import register_token, send_notification
 from backend.database import (
@@ -19,6 +19,8 @@ from backend.database import (
     get_visibility as db_get_visibility,
     save_visibility,
     cleanup_old_visibility,
+    get_event_year,
+    save_event_year,
 )
 from backend.facts import get_random_fact
 import asyncio
@@ -55,8 +57,30 @@ async def lifespan(app: FastAPI):
 
         print("🚀 Background preload finished.")
 
+    async def preload_events_background():
+
+        print("🔥 Background event preload started...")
+
+        current_year = date.today().year
+
+        for year in [current_year, current_year + 1, current_year + 2]:
+
+            if get_event_year(year):
+                print(f"📦 Events already cached for {year}")
+                continue
+
+            try:
+                result = await asyncio.to_thread(generate_events_for_year, year)
+                save_event_year(year, result)
+                print(f"✅ Events precomputed for {year}")
+            except Exception as e:
+                print("❌ Event preload error:", e)
+
+        print("🚀 Event preload finished.")
+
     # 🔥 THIS LINE IS THE FIX
     asyncio.create_task(preload_visibility_background())
+    asyncio.create_task(preload_events_background())
 
     yield
 
