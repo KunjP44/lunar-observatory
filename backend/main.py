@@ -63,7 +63,7 @@ async def lifespan(app: FastAPI):
 
         current_year = date.today().year
 
-        for year in [current_year, current_year + 1, current_year + 2]:
+        for year in [current_year]:
 
             if get_event_year(year):
                 print(f"📦 Events already cached for {year}")

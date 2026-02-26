@@ -7,6 +7,7 @@ import os
 # Constants
 SYNODIC_MONTH = 29.530588
 
+swe.set_sid_mode(swe.SIDM_LAHIRI)
 TITHI_NAMES_SHUKLA = {
     1: "Shukla Pratipada",
     2: "Shukla Dwitiya",
@@ -243,7 +244,6 @@ def approximate_solar_visible_regions(jd_max):
 
 
 def get_exact_eclipse_observer(date_obj, lat, lon):
-    swe.set_sid_mode(0)
     jd0 = swe.julday(date_obj.year, date_obj.month, date_obj.day, 0.0)
     res = swe.lun_eclipse_when(jd0 - 0.5, swe.FLG_SWIEPH, 0)
     if res[0] < 0:
@@ -330,7 +330,6 @@ def get_moon_data(
     latitude=None,
     longitude=None,
 ):
-    swe.set_sid_mode(swe.SIDM_LAHIRI)
     if latitude is None or longitude is None:
         # Default to Earth center (neutral observer)
         latitude = 0.0
@@ -341,9 +340,9 @@ def get_moon_data(
 
     try:
         if "-" in date_str:
-            date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+            date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
         elif "/" in date_str:
-            date_obj = datetime.strptime(date_str, "%Y/%m/%d")
+            date_obj = datetime.strptime(date_str, "%Y/%m/%d").date()
         else:
             return {"error": "Invalid date format."}
     except ValueError:
@@ -358,15 +357,13 @@ def get_moon_data(
     )
     jd_ut = datetime_to_julian_day(dt_utc)
 
-    swe.set_sid_mode(swe.SIDM_LAHIRI)
     lon_sun, lon_moon, lat_moon, dist_km = sun_moon_longitudes(jd_ut)
     tithi_index, paksha, tithi_name, diff = tithi_from_longitudes(lon_sun, lon_moon)
     nakshatra = get_nakshatra(lon_moon)
     rashi = get_rashi(lon_moon)
 
     # Calculate Visuals (Illumination) always based on ACTUAL time for 3D view
-    if calculate_at_sunrise and (hour != 6):
-        # ... (Same visual calc logic) ...
+    if not calculate_at_sunrise:
         dt_utc_visual = local_datetime_to_utc(
             date_obj.year, date_obj.month, date_obj.day, hour, minute, tz_offset
         )
@@ -386,9 +383,15 @@ def get_moon_data(
     event_type = classify_moon_event(event_illum, dist_km, tithi_index, paksha)
     # --- FIX END ---
 
-    swe.set_sid_mode(swe.SIDM_LAHIRI)
-    solar_eclipse = get_exact_solar_eclipse_observer(date_obj, latitude, longitude)
-    lunar_eclipse = get_exact_eclipse_observer(date_obj, latitude, longitude)
+    solar_eclipse = None
+    lunar_eclipse = None
+    # Only check solar eclipse on Amavasya
+    if tithi_index == 15 and paksha == "Krishna":
+        solar_eclipse = get_exact_solar_eclipse_observer(date_obj, latitude, longitude)
+
+    # Only check lunar eclipse on Purnima
+    if tithi_index == 15 and paksha == "Shukla":
+        lunar_eclipse = get_exact_eclipse_observer(date_obj, latitude, longitude)
 
     day_names = [
         "Monday",

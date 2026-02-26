@@ -60,11 +60,11 @@ def compute_visibility(date_str: str):
     observer = earth + wgs84.latlon(INDIA_LAT, INDIA_LON)
 
     # Generate times every 10 minutes
-    times = [
-        ts.utc(d.year, d.month, d.day, hour, minute)
-        for hour in range(24)
-        for minute in range(0, 60, 10)
-    ]
+    minutes = np.arange(0, 24 * 60, 10)
+    hours = minutes // 60
+    mins = minutes % 60
+
+    times = ts.utc(d.year, d.month, d.day, hours, mins)
 
     results = {}
 
@@ -76,14 +76,13 @@ def compute_visibility(date_str: str):
 
         magnitude = PLANET_MAGNITUDES.get(name)
 
-        for t in times:
-            astrometric = observer.at(t).observe(body)
-            alt, az, distance = astrometric.apparent().altaz()
-            altitudes.append(alt.degrees)
-            azimuths.append(az.degrees)
+        astrometric = observer.at(times).observe(body)
+        alt, az, distance = astrometric.apparent().altaz()
+        altitudes = alt.degrees
+        azimuths = az.degrees
 
-            sun_alt = observer.at(t).observe(sun).apparent().altaz()[0].degrees
-            sun_alts.append(sun_alt)
+        sun_astrometric = observer.at(times).observe(sun)
+        sun_altitudes = sun_astrometric.apparent().altaz()[0].degrees
 
         altitudes = np.array(altitudes)
         sun_alts = np.array(sun_alts)
