@@ -20,6 +20,15 @@ window.addEventListener("error", e => {
 });
 
 
+// 🔥 Detect if running inside Capacitor native app
+const isNativeApp =
+    typeof window !== "undefined" &&
+    window.Capacitor &&
+    window.Capacitor.isNativePlatform &&
+    window.Capacitor.isNativePlatform();
+
+console.log("Is Native App:", isNativeApp);
+
 // ============================== LOGIC CONTROLLER ==============================
 let targetPhaseAngle = 0; // from backend (degrees)
 let visualPhaseAngle = 0; // smoothed (degrees)
@@ -2155,14 +2164,25 @@ const firebaseConfig = {
     appId: "1:379098412161:web:0e386d4c2744c058748980"
 };
 
-const firebaseApp = initializeApp(firebaseConfig);
-const messaging = getMessaging(firebaseApp);
+let firebaseApp = null;
+let messaging = null;
+
+if (!isNativeApp) {
+    firebaseApp = initializeApp(firebaseConfig);
+    messaging = getMessaging(firebaseApp);
+}
 
 // ... existing imports ...
 
 async function setupPush() {
+    if (isNativeApp) {
+        console.log("Native app detected — skipping web push setup.");
+        return;
+    }
     try {
-        const permission = await Notification.requestPermission();
+        if (typeof Notification !== "undefined") {
+            await Notification.requestPermission();
+        }
         if (permission !== "granted") {
             console.log("Notification permission denied.");
             return;
@@ -2248,9 +2268,11 @@ function syncNotificationUI() {
 
 // Check permission status
 function hasNotificationPermission() {
+    if (typeof Notification === "undefined") {
+        return false;
+    }
     return Notification.permission === "granted";
 }
-
 // Enable Push (only when needed)
 let pushInitializing = false;
 async function enablePushIfNeeded() {
@@ -2443,28 +2465,26 @@ function loadStoredNotifications() {
 
 loadStoredNotifications();
 
-onMessage(messaging, (payload) => {
-    console.log("Foreground message received:", payload);
+if (!isNativeApp && messaging) {
+    onMessage(messaging, (payload) => {
+        console.log("Foreground message received:", payload);
 
-    const title = payload.notification?.title || "Notification";
-    const body = payload.notification?.body || "";
+        const title = payload.notification?.title || "Notification";
+        const body = payload.notification?.body || "";
 
-    const newNotification = {
-        id: Date.now(),
-        title,
-        body,
-        time: new Date().toISOString(),
-        read: false
-    };
+        const newNotification = {
+            id: Date.now(),
+            title,
+            body,
+            time: new Date().toISOString(),
+            read: false
+        };
 
-    // 1. Save to localStorage
-    let stored = JSON.parse(localStorage.getItem("appNotifications") || "[]");
-    stored.unshift(newNotification);
-    localStorage.setItem("appNotifications", JSON.stringify(stored));
+        let stored = JSON.parse(localStorage.getItem("appNotifications") || "[]");
+        stored.unshift(newNotification);
+        localStorage.setItem("appNotifications", JSON.stringify(stored));
 
-    // 2. Update UI
-    addNotificationToPanel(newNotification);
-
-    // 3. Show red dot
-    showNotificationDot();
-});
+        addNotificationToPanel(newNotification);
+        showNotificationDot();
+    });
+}
