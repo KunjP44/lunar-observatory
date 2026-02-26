@@ -1470,7 +1470,7 @@ body.lunar-active .info-card {
         border-radius: 32px 32px 0 0;
         padding: 28px 28px 100px 28px;
         padding-bottom: 100px;
-        max-height: 80vh;
+        max-height: 80vh !important;
         z-index: 600;
         /* Higher than Pill */
         right: 0;
@@ -1848,12 +1848,11 @@ body.events-open canvas {
 }
 
 .panel-icon-btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--text-secondary);
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1862,8 +1861,8 @@ body.events-open canvas {
 }
 
 .panel-icon-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
+    background: rgba(255, 255, 255, 0.08);
+    transform: scale(1.05);
 }
 
 .panel-icon-btn svg {
@@ -2792,6 +2791,31 @@ input:checked+.slider:before {
 
 #btn-notifications {
     position: relative;
+}
+
+.notifications-list {
+    padding: 20px 20px 40px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.notification-item {
+    padding: 18px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    transition: all 0.25s ease;
+}
+
+.notification-item.unread {
+    border-left: 4px solid var(--accent-blue);
+    background: rgba(10, 132, 255, 0.08);
+}
+
+.notification-item:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 /* Mobile Adjustments */

@@ -520,6 +520,7 @@ let lastTap = 0;
 const pointer = new THREE.Vector2();
 const raycaster = new THREE.Raycaster();
 const canvas = renderer.domElement;
+let singleTapTimeout = null;
 
 canvas.style.touchAction = "none";
 
@@ -646,41 +647,48 @@ window.addEventListener("wheel", (e) => {
 ===================================================== */
 
 canvas.addEventListener("touchstart", (e) => {
-    // 1 Finger Interaction
-    if (e.touches.length === 1) {
-        const now = Date.now();
-        const DOUBLE_TAP_DELAY = 300; // ms
 
-        // Check if this tap is close in time to the last one
-        if (now - lastTap < DOUBLE_TAP_DELAY && !isDragging && !isPinching) {
+    if (e.touches.length === 1) {
+
+        const now = Date.now();
+        const DOUBLE_TAP_DELAY = 300;
+
+        if (now - lastTap < DOUBLE_TAP_DELAY) {
+
+            // DOUBLE TAP
             e.preventDefault();
+            clearTimeout(singleTapTimeout);
             handleDoubleTap(e.touches[0].clientX, e.touches[0].clientY);
             lastTap = 0;
+
         } else {
+
             lastTap = now;
             isDragging = false;
             isPinching = false;
-            touchStart.x = e.touches[0].clientX;
-            touchStart.y = e.touches[0].clientY;
 
-            setTimeout(() => {
+            const x = e.touches[0].clientX;
+            const y = e.touches[0].clientY;
+
+            singleTapTimeout = setTimeout(() => {
                 if (!isDragging && !isPinching) {
-                    handleSingleTap(e.touches[0].clientX, e.touches[0].clientY);
+                    handleSingleTap(x, y);
                 }
-            }, 250);
+            }, DOUBLE_TAP_DELAY);
         }
     }
-    // 2 Fingers: Pinch Zoom
-    else if (e.touches.length === 2) {
-        isDragging = false;
+
+    if (e.touches.length === 2) {
         isPinching = true;
+        isDragging = false;
         lastTap = 0;
+
         const dx = e.touches[0].clientX - e.touches[1].clientX;
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         lastTouchDist = Math.sqrt(dx * dx + dy * dy);
     }
-}, { passive: false });
 
+}, { passive: false });
 // FIND THIS BLOCK IN main.js AND REPLACE IT
 canvas.addEventListener("touchmove", (e) => {
     e.preventDefault();
@@ -718,24 +726,27 @@ canvas.addEventListener("touchmove", (e) => {
 
     // 2. Pinch Zoom logic (Strictly 2 fingers)
     if (e.touches.length === 2) {
-        isPinching = true; // FORCE PINCH STATE
-        isDragging = false; // KILL DRAG STATE
+
+        isPinching = true;
+        isDragging = false;
 
         const dx = e.touches[0].clientX - e.touches[1].clientX;
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         const currentDist = Math.sqrt(dx * dx + dy * dy);
 
-        const delta = lastTouchDist - currentDist;
-        const zoomSpeed = 1.2;  // higher value for higher zoom speed
+        const delta = currentDist - lastTouchDist;
 
-        targetRadius += delta * zoomSpeed;
+        const zoomStrength = isMobile ? 1.5 : 0.5;
+        targetRadius -= delta * zoomStrength;
 
         const min = cameraMode === "focus" ? focusMinRadius : DEFAULT_MIN_RADIUS;
         const max = cameraMode === "focus" ? focusMaxRadius : DEFAULT_MAX_RADIUS;
+
         targetRadius = THREE.MathUtils.clamp(targetRadius, min, max);
 
         lastTouchDist = currentDist;
     }
+
 }, { passive: false });
 
 canvas.addEventListener("touchend", () => {
@@ -775,8 +786,13 @@ function handleSingleTap(clientX, clientY) {
         while (obj.parent && !obj.userData.id) obj = obj.parent;
 
         if (obj.userData.id) {
-            loadInfoCard(obj.userData.id);
-            infoCard.classList.remove("hidden");
+
+            // NEW LOGIC: Only show card if we are ALREADY focused on this specific object
+            if (cameraMode === "focus" && focusObject === obj) {
+                loadInfoCard(obj.userData.id);
+                infoCard.classList.remove("hidden");
+            }
+            // If not focused, Single Tap does nothing (waiting for Double Tap)
         }
     }
 }
@@ -1000,16 +1016,12 @@ function focusOn(obj) {
     focusObject = obj;
     solarPaused = true;
 
-    loadInfoCard(obj.userData.id);
+    // REMOVED: loadInfoCard and classList removal
 
     const r = obj.geometry.boundingSphere.radius;
-    focusMinRadius = Math.max(20, r * 4);
-    focusMaxRadius = r * 40;
-    targetRadius = r * 12;
 
+    // Desktop: 12x radius, Mobile: 18x radius
     const isMobileDevice = window.innerWidth < 768;
-
-    // Desktop: 12x radius, Mobile: 18x radius (keeps it further away)
     const zoomMultiplier = isMobileDevice ? 18 : 12;
 
     focusMinRadius = Math.max(20, r * 4);
@@ -1020,7 +1032,7 @@ function focusOn(obj) {
     document.getElementById("focus-name").textContent =
         obj.userData.id === "moon" ? "MOON" : obj.userData.id.toUpperCase();
 
-    infoCard.classList.remove("hidden");
+    // Keep overlay active to show we are in focus mode (optional, but good UX)
     document.getElementById("focus-indicator").classList.remove("hidden");
     document.getElementById("focus-overlay").classList.add("active");
     document.body.classList.add("focused");
@@ -1129,12 +1141,15 @@ function applySolarLighting() {
     lunarSpotlight.visible = false;
 }
 function applyLunarLighting() {
-    ambient.intensity = 0.05;   // almost zero
-    hemi.intensity = 0;         // IMPORTANT
+    ambient.intensity = 0.18;
+    hemi.intensity = 0.2;
+
     sunLight.intensity = 0;
+
+    lunarSpotlight.intensity = 8;
+    lunarSpotlight.color.set(0xffffff);
     lunarSpotlight.visible = true;
 }
-
 
 
 // LUNAR SCENE HELPERS
@@ -1417,7 +1432,9 @@ function animate() {
     }
 
     // ---------------- CAMERA SMOOTHING ----------------
-    const lerpFactor = isDragging ? 0.6 : 0.05;
+    const lerpFactor = isMobile
+        ? (isDragging ? 0.6 : 0.12)
+        : (isDragging ? 0.6 : 0.05);
     currentTargetPos.lerp(targetPos, lerpFactor);
     currentRadius = THREE.MathUtils.lerp(currentRadius, targetRadius, lerpFactor);
     theta = THREE.MathUtils.lerp(theta, targetTheta, lerpFactor);
@@ -1804,6 +1821,19 @@ if (viewSettingsBtn) {
     });
 }
 
+
+document.getElementById("mark-all-read")?.addEventListener("click", () => {
+
+    let stored = JSON.parse(localStorage.getItem("appNotifications") || "[]");
+    stored = stored.map(n => ({ ...n, read: true }));
+    localStorage.setItem("appNotifications", JSON.stringify(stored));
+
+    hideNotificationDot();
+
+    document.querySelectorAll(".notification-item").forEach(item => {
+        item.classList.remove("unread");
+    });
+});
 
 /* -------------------------
    Load Year Events
@@ -2293,20 +2323,37 @@ function hideNotificationDot() {
 
 function addNotificationToPanel(notification) {
 
-    if (!notificationsContainer) return;
-
     const div = document.createElement("div");
     div.className = "notification-item";
 
+    if (!notification.read) {
+        div.classList.add("unread");
+    }
+
     div.innerHTML = `
-        <div style="font-size:13px; font-weight:600;">${notification.title}</div>
-        <div style="font-size:12px; opacity:0.7; margin-top:4px;">
+        <div style="font-size:14px; font-weight:600;">
+            ${notification.title}
+        </div>
+        <div style="font-size:13px; opacity:0.8; margin-top:6px;">
             ${notification.body}
         </div>
-        <div style="font-size:10px; opacity:0.4; margin-top:6px;">
+        <div style="font-size:10px; opacity:0.4; margin-top:10px;">
             ${new Date(notification.time).toLocaleString()}
         </div>
     `;
+
+    div.addEventListener("click", () => {
+        div.classList.remove("unread");
+
+        let stored = JSON.parse(localStorage.getItem("appNotifications") || "[]");
+        stored = stored.map(n =>
+            n.id === notification.id ? { ...n, read: true } : n
+        );
+        localStorage.setItem("appNotifications", JSON.stringify(stored));
+
+        const unreadExists = stored.some(n => !n.read);
+        if (!unreadExists) hideNotificationDot();
+    });
 
     notificationsContainer.prepend(div);
 }
