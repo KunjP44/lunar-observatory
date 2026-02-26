@@ -11,7 +11,7 @@ from datetime import date, timedelta
 from backend.visibility.engine import compute_visibility, VISIBILITY_CACHE
 from backend.moon.calendar import get_ui_moon_data
 from backend.solar.router import router as solar_router
-from backend.events.router import router as events_router
+from backend.events.router import router as events_router, generate_events_for_year
 from backend.visibility.router import router as visibility_router
 from backend.push import register_token, send_notification
 from backend.database import (
