@@ -804,7 +804,7 @@ function handleSingleTap(clientX, clientY) {
         if (obj.userData.id) {
 
             // NEW LOGIC: Only show card if we are ALREADY focused on this specific object
-            if (cameraMode === "focus" && focusObject === obj) {
+            if (cameraMode === "focus" && focusObject?.userData?.id === obj.userData.id) {
                 loadInfoCard(obj.userData.id);
                 infoCard.classList.remove("hidden");
             }
@@ -1027,7 +1027,7 @@ function setSystemVisibility(visible) {
 
 function focusOn(obj) {
     if (cameraMode === "lunar") return;
-
+    obj = planetMeshes[obj.userData.id.charAt(0).toUpperCase() + obj.userData.id.slice(1)] || obj;
     cameraMode = "focus";
     focusObject = obj;
     solarPaused = true;
@@ -1128,25 +1128,20 @@ function smoothResetCamera() {
     focusObject = null;
     solarPaused = false;
 
-    // Reset Target to Sun Center
+    // Reset target position
     targetPos.set(0, 0, 0);
     currentTargetPos.set(0, 0, 0);
 
-    // FIX: Set TARGET angles, allowing the animate loop to glide there
+    // Reset angles
     targetTheta = Math.PI / 4;
     targetPhi = Math.PI / 3;
 
-    // CRITICAL FIX: Ensure we are far enough away!
-    targetRadius = DEFAULT_RADIUS; // 180
+    theta = targetTheta;
+    phi = targetPhi;
 
-    // If we are "inside" the sun (radius < 50), jump radius immediately 
-    // (angles will still smooth-transition)
-    if (currentRadius < 50) {
-        currentRadius = DEFAULT_RADIUS;
-    } else {
-        // Otherwise smooth transition for radius too
-        currentRadius = DEFAULT_RADIUS * 1.2;
-    }
+    // 🚀 HARD RESET radius (no smoothing through sun)
+    currentRadius = DEFAULT_RADIUS;
+    targetRadius = DEFAULT_RADIUS;
 }
 
 // ================= Function to change the lighting ==============
