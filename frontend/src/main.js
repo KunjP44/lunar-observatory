@@ -1883,17 +1883,19 @@ async function loadPlanetVisibilityForDate(dateObj) {
 }
 
 async function loadEventsForYear(year) {
+
+    // ✅ Prevent duplicate calls
+    if (cachedEvents.length && currentEventsYear === year) {
+        return;
+    }
+
     try {
         const res = await fetch(`${API_BASE}/api/events/year/${year}`);
         const events = await res.json();
 
-        if (!events.length) {
-            // Retry after short delay
-            setTimeout(() => loadEventsForYear(year), 2000);
-            return;
-        }
-
         cachedEvents = events;
+        currentEventsYear = year;
+
         renderEvents(events);
         renderYearSelector(year);
 
@@ -1901,7 +1903,6 @@ async function loadEventsForYear(year) {
         console.error("Events load error:", err);
     }
 }
-
 /* -------------------------
    Render Events
 -------------------------- */
@@ -2175,40 +2176,48 @@ if (!isNativeApp) {
 // ... existing imports ...
 
 async function setupPush() {
+
     if (isNativeApp) {
         console.log("Native app detected — skipping web push setup.");
         return;
     }
+
     try {
-        if (typeof Notification !== "undefined") {
-            await Notification.requestPermission();
+
+        // 1️⃣ Request permission properly
+        if (typeof Notification === "undefined") {
+            console.log("Notification API not supported.");
+            return;
         }
+
+        const permission = await Notification.requestPermission();
+
         if (permission !== "granted") {
             console.log("Notification permission denied.");
             return;
         }
 
-        // 1. DETERMINE CORRECT PATH
-        // If on localhost, look at root. If on GitHub Pages, look in the subfolder.
-        const swPath = location.hostname === "localhost" || location.hostname === "127.0.0.1"
-            ? '/firebase-messaging-sw.js'
-            : '/lunar-observatory/firebase-messaging-sw.js';
+        // 2️⃣ Determine correct SW path
+        const swPath =
+            location.hostname === "localhost" ||
+                location.hostname === "127.0.0.1"
+                ? "/firebase-messaging-sw.js"
+                : "/lunar-observatory/firebase-messaging-sw.js";
 
         console.log(`Registering SW at: ${swPath}`);
 
-        // 2. REGISTER SERVICE WORKER
+        // 3️⃣ Register Service Worker
         let registration = await navigator.serviceWorker.getRegistration();
 
         if (!registration) {
             registration = await navigator.serviceWorker.register(swPath, {
-                scope: './'
+                scope: "./"
             });
         }
 
-        // Wait for it to be ready to avoid "failed to execute subscribe" errors
         await navigator.serviceWorker.ready;
 
-        // 3. GET TOKEN
+        // 4️⃣ Get token
         const token = await getToken(messaging, {
             vapidKey: "BFZ0767uqrN5u5Ey0HmcKJYrUgbDchsWXChR1PSezmLQToHkgAD4eImqTtFdi2oA1MKBJB9lJ31Pr2SPmbBu8cU",
             serviceWorkerRegistration: registration
@@ -2219,10 +2228,11 @@ async function setupPush() {
             return;
         }
 
-        // 4. CHECK IF TOKEN CHANGED & SEND TO BACKEND
+        // 5️⃣ Send to backend only if changed
         const savedToken = localStorage.getItem("fcm_token");
 
         if (token !== savedToken) {
+
             console.log("New token detected, updating backend...");
 
             await fetch(`${API_BASE}/api/push/register`, {
@@ -2232,11 +2242,12 @@ async function setupPush() {
                     token: token,
                     daily_brief: localStorage.getItem("dailyBrief") === "true",
                     planet_brief: localStorage.getItem("planetBrief") === "true"
-                }) // ✅ THIS IS CORRECT
+                })
             });
 
             localStorage.setItem("fcm_token", token);
             localStorage.setItem("pushRegistered", "true");
+
             console.log("Token registered successfully.");
         } else {
             console.log("Token is up to date.");
@@ -2268,9 +2279,17 @@ function syncNotificationUI() {
 
 // Check permission status
 function hasNotificationPermission() {
+
+    // ✅ Native App
+    if (isNativeApp) {
+        return localStorage.getItem("pushRegistered") === "true";
+    }
+
+    // ✅ Web PWA
     if (typeof Notification === "undefined") {
         return false;
     }
+
     return Notification.permission === "granted";
 }
 // Enable Push (only when needed)
