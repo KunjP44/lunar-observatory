@@ -1386,7 +1386,9 @@ body.lunar-active .info-card {
         pointer-events: auto !important;
 
         /* 5. Visuals: Transparent bg (cards define their own glass) */
-        background: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.8) 40%);
+        background: linear-gradient(to bottom,
+                transparent 0%,
+                rgba(0, 0, 0, 0.3) 70%);
         border: none;
         box-shadow: none;
         backdrop-filter: none;

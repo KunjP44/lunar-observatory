@@ -190,7 +190,7 @@ let uiPage = "solar";
 let focusObject = null;
 let solarPaused = false;
 let isMobile = window.innerWidth < 768;
-const MOON_SCALE = isMobile ? 35 : 40;
+const MOON_SCALE = isMobile ? 33 : 40;
 const LUNAR_OFFSET_DESKTOP = new THREE.Vector3(9, 0, 0);
 const LUNAR_OFFSET_MOBILE = new THREE.Vector3(0, 0, 0);
 const lunarFrameOffset = new THREE.Vector3();
@@ -219,7 +219,7 @@ const SOLAR_LIGHTING = {
 const LUNAR_LIGHTING = {
     ambient: 0.0001,
     sun: 0,
-    lunar: 7,
+    lunar: 6,
 };
 
 const ambient = new THREE.AmbientLight(0xffffff, SOLAR_LIGHTING.ambient);
