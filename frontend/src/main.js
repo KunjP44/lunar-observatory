@@ -2264,9 +2264,19 @@ async function initNativePush() {
 
     if (!isNativeApp) return;
 
-    const { PushNotifications } = await import('@capacitor/push-notifications');
+    const PushNotifications = window.Capacitor.Plugins.PushNotifications;
 
-    await PushNotifications.requestPermissions();
+    if (!PushNotifications) {
+        console.error("PushNotifications plugin not available");
+        return;
+    }
+
+    const permission = await PushNotifications.requestPermissions();
+
+    if (permission.receive !== 'granted') {
+        console.log("Notification permission not granted");
+        return;
+    }
 
     await PushNotifications.register();
 
@@ -2286,8 +2296,6 @@ async function initNativePush() {
 
         localStorage.setItem("pushRegistered", "true");
         localStorage.setItem("fcm_token", token.value);
-
-        nativePushReady = true;
     });
 
     PushNotifications.addListener('registrationError', (err) => {
