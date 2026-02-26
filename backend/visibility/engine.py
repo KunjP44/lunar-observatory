@@ -74,10 +74,6 @@ def compute_visibility(date_str: str):
 
     for name, body in PLANETS.items():
 
-        altitudes = []
-        sun_alts = []
-        azimuths = []
-
         magnitude = PLANET_MAGNITUDES.get(name)
 
         astrometric = observer.at(times).observe(body)
@@ -85,10 +81,6 @@ def compute_visibility(date_str: str):
 
         altitudes = alt.degrees
         azimuths = az.degrees
-
-        altitudes = np.array(altitudes)
-        sun_alts = np.array(sun_alts)
-        azimuths = np.array(azimuths)
         # Best viewing window mask
         best_mask = (altitudes > 20) & (sun_alts < -12)
 
