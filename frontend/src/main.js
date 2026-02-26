@@ -217,9 +217,9 @@ const SOLAR_LIGHTING = {
 };
 
 const LUNAR_LIGHTING = {
-    ambient: 0.5,
+    ambient: 0.0001,
     sun: 0,
-    lunar: 15,
+    lunar: 7,
 };
 
 const ambient = new THREE.AmbientLight(0xffffff, SOLAR_LIGHTING.ambient);

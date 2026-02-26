@@ -215,14 +215,14 @@ function createSolarEclipseScene(container) {
     scene.add(sun);
 
     // Light Source (Inside Sun)
-    const sunLight = new THREE.PointLight(0xffffff, 18, 300);
+    const sunLight = new THREE.PointLight(0xffffff, 20, 100);
     sunLight.position.copy(sun.position);
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.set(2048, 2048);
     scene.add(sunLight);
 
     // Ambient
-    scene.add(new THREE.AmbientLight(0x404040, 0.3));
+    scene.add(new THREE.AmbientLight(0x404040, 0.9));
 
     // 2. EARTH (Center)
     const earth = new THREE.Mesh(
