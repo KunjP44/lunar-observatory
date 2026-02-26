@@ -55,7 +55,22 @@ def send_notification(title: str, body: str, category: str = "all"):
     print("Sending to tokens:", tokens)
 
     for token in tokens:
+
         message = messaging.Message(
+            token=token,
+            # 🔹 Android system notification (CRITICAL FIX)
+            notification=messaging.Notification(
+                title=title,
+                body=body,
+            ),
+            # 🔹 Android-specific config
+            android=messaging.AndroidConfig(
+                priority="high",
+                notification=messaging.AndroidNotification(
+                    channel_id="default", sound="default"
+                ),
+            ),
+            # 🔹 Web Push config (keeps PWA working)
             webpush=messaging.WebpushConfig(
                 notification=messaging.WebpushNotification(
                     title=title,
@@ -63,13 +78,14 @@ def send_notification(title: str, body: str, category: str = "all"):
                     icon="https://kunjp44.github.io/lunar-observatory/frontend/assets/notification-icon.png",
                 )
             ),
-            token=token,
+            # 🔹 Data payload (for foreground handling)
+            data={"title": title, "body": body, "category": category},
         )
 
         try:
             messaging.send(message)
 
-        except Exception as e:
+        except FirebaseError as e:
             print("Error sending to token:", token, e)
 
             if "Requested entity was not found" in str(e):
