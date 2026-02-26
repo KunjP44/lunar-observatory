@@ -2323,17 +2323,17 @@ function syncNotificationUI() {
 }
 
 // Check permission status
-function hasNotificationPermission() {
+async function hasNotificationPermission() {
 
-    // ✅ Native App
     if (isNativeApp) {
-        return localStorage.getItem("pushRegistered") === "true";
+        const PushNotifications = window.Capacitor?.Plugins?.PushNotifications;
+        if (!PushNotifications) return false;
+
+        const result = await PushNotifications.checkPermissions();
+        return result.receive === "granted";
     }
 
-    // ✅ Web PWA
-    if (typeof Notification === "undefined") {
-        return false;
-    }
+    if (typeof Notification === "undefined") return false;
 
     return Notification.permission === "granted";
 }
@@ -2343,14 +2343,15 @@ async function enablePushIfNeeded() {
 
     if (isNativeApp) {
 
-        if (!hasNotificationPermission()) {
+        const allowed = await hasNotificationPermission();
+        if (!allowed) {
             await initNativePush();
         }
 
         return;
     }
 
-    if (!hasNotificationPermission()) {
+    if (!(await hasNotificationPermission())) {
         await setupPush();
     }
 }
