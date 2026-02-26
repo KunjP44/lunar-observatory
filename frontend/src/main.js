@@ -2258,6 +2258,43 @@ async function setupPush() {
     }
 }
 
+let nativePushReady = false;
+
+async function initNativePush() {
+
+    if (!isNativeApp) return;
+
+    const { PushNotifications } = await import('@capacitor/push-notifications');
+
+    await PushNotifications.requestPermissions();
+
+    await PushNotifications.register();
+
+    PushNotifications.addListener('registration', async (token) => {
+
+        console.log("Native FCM Token:", token.value);
+
+        await fetch(`${API_BASE}/api/push/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                token: token.value,
+                daily_brief: localStorage.getItem("dailyBrief") === "true",
+                planet_brief: localStorage.getItem("planetBrief") === "true"
+            })
+        });
+
+        localStorage.setItem("pushRegistered", "true");
+        localStorage.setItem("fcm_token", token.value);
+
+        nativePushReady = true;
+    });
+
+    PushNotifications.addListener('registrationError', (err) => {
+        console.error("Push registration error:", err);
+    });
+}
+
 // ================= CLEAN NOTIFICATION TOGGLE SYSTEM =================
 
 const dailyToggle = document.getElementById("toggle-daily-brief");
@@ -2295,12 +2332,18 @@ function hasNotificationPermission() {
 // Enable Push (only when needed)
 let pushInitializing = false;
 async function enablePushIfNeeded() {
-    if (pushInitializing) return;
+
+    if (isNativeApp) {
+
+        if (!hasNotificationPermission()) {
+            await initNativePush();
+        }
+
+        return;
+    }
 
     if (!hasNotificationPermission()) {
-        pushInitializing = true;
         await setupPush();
-        pushInitializing = false;
     }
 }
 
@@ -2370,6 +2413,10 @@ planetToggle?.addEventListener("change", async (e) => {
 
 // Run once at startup
 syncNotificationUI();
+
+if (isNativeApp) {
+    initNativePush();
+}
 
 const notifDot = document.getElementById("notif-dot");
 const notificationsContainer = document.getElementById("notifications-container");
