@@ -8,6 +8,7 @@ import numpy as np
 INDIA_LAT = 23.0225
 INDIA_LON = 72.5714
 
+
 eph = None
 ts = None
 earth = None
@@ -67,6 +68,9 @@ def compute_visibility(date_str: str):
     times = ts.utc(d.year, d.month, d.day, hours, mins)
 
     results = {}
+    sun_astrometric = observer.at(times).observe(sun)
+    sun_alt, _, _ = sun_astrometric.apparent().altaz()
+    sun_alts = sun_alt.degrees
 
     for name, body in PLANETS.items():
 
@@ -78,11 +82,9 @@ def compute_visibility(date_str: str):
 
         astrometric = observer.at(times).observe(body)
         alt, az, distance = astrometric.apparent().altaz()
+
         altitudes = alt.degrees
         azimuths = az.degrees
-
-        sun_astrometric = observer.at(times).observe(sun)
-        sun_altitudes = sun_astrometric.apparent().altaz()[0].degrees
 
         altitudes = np.array(altitudes)
         sun_alts = np.array(sun_alts)

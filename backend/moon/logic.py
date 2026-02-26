@@ -250,7 +250,7 @@ def get_exact_eclipse_observer(date_obj, lat, lon):
         return None
     jd_max = res[1][0]
     y, m, d, h = swe.revjul(jd_max, swe.GREG_CAL)
-    if datetime(y, m, d).date() != date_obj.date():
+    if date(y, m, d) != date_obj:
         return None
     attr = swe.lun_eclipse_how(jd_max, [0, 0, 0], swe.FLG_SWIEPH)
     mag = attr[1][0]
@@ -291,7 +291,7 @@ def get_exact_solar_eclipse_observer(date_obj, lat, lon):
         return None
     jd_max = res[1][0]
     y, m, d, _ = swe.revjul(jd_max, swe.GREG_CAL)
-    if date(y, m, d) != date_obj.date():
+    if date(y, m, d) != date_obj:
         return None
     res2 = swe.sol_eclipse_how(jd_max, [lon, lat, 0], swe.FLG_SWIEPH)
     eclipse_mag = res2[1][0]
