@@ -21,34 +21,41 @@ from backend.database import (
     cleanup_old_visibility,
 )
 from backend.facts import get_random_fact
+import asyncio
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("🧹 Cleaning old visibility cache...")
-    cleanup_old_visibility(30)
-    print("🔥 Preloading visibility cache (Persistent Mode)...")
 
-    today = date.today()
+    async def preload_visibility_background():
+        print("🔥 Background visibility preload started...")
 
-    for i in range(7):
-        d = today + timedelta(days=i)
-        date_str = d.isoformat()
+        cleanup_old_visibility(30)
 
-        # 1️⃣ Try loading from SQLite
-        db_data = db_get_visibility(date_str)
+        today = date.today()
 
-        if db_data:
-            VISIBILITY_CACHE[date_str] = db_data
-            print("📦 Loaded from DB:", date_str)
-        else:
-            try:
-                result = compute_visibility(date_str)
-                VISIBILITY_CACHE[date_str] = result
-                save_visibility(date_str, result)
-                print("✅ Computed & Saved:", date_str)
-            except Exception as e:
-                print("❌ Preload error:", e)
+        for i in range(7):
+            d = today + timedelta(days=i)
+            date_str = d.isoformat()
+
+            db_data = db_get_visibility(date_str)
+
+            if db_data:
+                VISIBILITY_CACHE[date_str] = db_data
+                print("📦 Loaded from DB:", date_str)
+            else:
+                try:
+                    result = compute_visibility(date_str)
+                    VISIBILITY_CACHE[date_str] = result
+                    save_visibility(date_str, result)
+                    print("✅ Computed & Saved:", date_str)
+                except Exception as e:
+                    print("❌ Preload error:", e)
+
+        print("🚀 Background preload finished.")
+
+    # 🔥 THIS LINE IS THE FIX
+    asyncio.create_task(preload_visibility_background())
 
     yield
 
@@ -133,6 +140,6 @@ def debug_tokens():
     }
 
 
-@api.get("/")
+@api.api_route("/", methods=["GET", "HEAD"])
 def health():
     return {"status": "ok"}

@@ -2827,3 +2827,9 @@ input:checked+.slider:before {
         /* Fixed height for scene on mobile */
     }
 }
+
+@media (max-width: 640px) {
+    .events-panel {
+        width: 100vw;
+    }
+}
