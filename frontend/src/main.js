@@ -217,9 +217,9 @@ const SOLAR_LIGHTING = {
 };
 
 const LUNAR_LIGHTING = {
-    ambient: 0.12,
+    ambient: 0.5,
     sun: 0,
-    lunar: 6,
+    lunar: 15,
 };
 
 const ambient = new THREE.AmbientLight(0xffffff, SOLAR_LIGHTING.ambient);
@@ -643,34 +643,39 @@ window.addEventListener("wheel", (e) => {
 
 //  ====================== touch controls =====================
 /* =====================================================
-    MOBILE TOUCH HANDLING (New)
+   MOBILE TOUCH HANDLING (Google Earth Style)
 ===================================================== */
 
 canvas.addEventListener("touchstart", (e) => {
-
+    // 1. Single Finger (Rotate or Tap)
     if (e.touches.length === 1) {
+        touchStart.x = e.touches[0].clientX;
+        touchStart.y = e.touches[0].clientY;
 
         const now = Date.now();
         const DOUBLE_TAP_DELAY = 300;
 
         if (now - lastTap < DOUBLE_TAP_DELAY) {
-
-            // DOUBLE TAP
+            // --- DOUBLE TAP DETECTED ---
             e.preventDefault();
             clearTimeout(singleTapTimeout);
             handleDoubleTap(e.touches[0].clientX, e.touches[0].clientY);
             lastTap = 0;
-
         } else {
-
+            // --- SINGLE TAP START ---
             lastTap = now;
             isDragging = false;
             isPinching = false;
+
+            // Stop any existing inertia when finger touches down
+            targetTheta = theta;
+            targetPhi = phi;
 
             const x = e.touches[0].clientX;
             const y = e.touches[0].clientY;
 
             singleTapTimeout = setTimeout(() => {
+                // Only trigger single tap if we didn't drag or pinch
                 if (!isDragging && !isPinching) {
                     handleSingleTap(x, y);
                 }
@@ -678,45 +683,45 @@ canvas.addEventListener("touchstart", (e) => {
         }
     }
 
+    // 2. Two Fingers (Pinch Zoom)
     if (e.touches.length === 2) {
         isPinching = true;
         isDragging = false;
-        lastTap = 0;
+        lastTap = 0; // Cancel tap logic
 
         const dx = e.touches[0].clientX - e.touches[1].clientX;
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         lastTouchDist = Math.sqrt(dx * dx + dy * dy);
     }
-
 }, { passive: false });
-// FIND THIS BLOCK IN main.js AND REPLACE IT
+
+
 canvas.addEventListener("touchmove", (e) => {
-    e.preventDefault();
-    if (isPinching) return;
+    e.preventDefault(); // Prevent scrolling
 
-    // 1. Rotation logic (Strictly 1 finger AND NOT PINCHING)
+    // --- ROTATION (1 Finger) ---
     if (e.touches.length === 1 && !isPinching && !isTimeTraveling) {
-
         const dx = e.touches[0].clientX - touchStart.x;
         const dy = e.touches[0].clientY - touchStart.y;
 
-        const MOVE_THRESHOLD = 3; // 👈 critical
-
-        // Ignore micro-movements
-        if (Math.abs(dx) < MOVE_THRESHOLD && Math.abs(dy) < MOVE_THRESHOLD) {
-            return;
-        }
+        // Threshold to prevent jitter on tiny movements
+        if (!isDragging && Math.abs(dx) < 3 && Math.abs(dy) < 3) return;
 
         isDragging = true;
 
-        const SENSITIVITY = 0.004;
+        // Sensitivity: 1 screen width = 360 degrees rotation (Natural feel)
+        const ROTATE_SPEED = 2.0;
+        const sensitivity = (Math.PI * 2 * ROTATE_SPEED) / window.innerWidth;
 
         if (cameraMode === "lunar") {
-            if (planetMeshes.moon)
-                planetMeshes.moon.rotation.y += dx * SENSITIVITY;
+            // 🌕 ROTATE MOON DIRECTLY
+            if (planetMeshes.moon) {
+                planetMeshes.moon.rotation.y += dx * sensitivity;
+            }
         } else {
-            targetTheta -= dx * SENSITIVITY;
-            targetPhi -= dy * SENSITIVITY;
+            // ☀️ ROTATE CAMERA ORBIT
+            targetTheta -= dx * sensitivity;
+            targetPhi -= dy * sensitivity;
             targetPhi = THREE.MathUtils.clamp(targetPhi, 0.1, Math.PI - 0.1);
         }
 
@@ -724,9 +729,8 @@ canvas.addEventListener("touchmove", (e) => {
         touchStart.y = e.touches[0].clientY;
     }
 
-    // 2. Pinch Zoom logic (Strictly 2 fingers)
+    // --- PINCH ZOOM (2 Fingers) ---
     if (e.touches.length === 2) {
-
         isPinching = true;
         isDragging = false;
 
@@ -734,19 +738,22 @@ canvas.addEventListener("touchmove", (e) => {
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         const currentDist = Math.sqrt(dx * dx + dy * dy);
 
-        const delta = currentDist - lastTouchDist;
+        if (lastTouchDist > 0 && currentDist > 0) {
+            // Multiplicative Zoom (Google Maps style)
+            // Ratio > 1 means zooming IN, < 1 means zooming OUT
+            const zoomRatio = lastTouchDist / currentDist;
 
-        const zoomStrength = isMobile ? 1.5 : 0.5;
-        targetRadius -= delta * zoomStrength;
+            targetRadius *= zoomRatio;
 
-        const min = cameraMode === "focus" ? focusMinRadius : DEFAULT_MIN_RADIUS;
-        const max = cameraMode === "focus" ? focusMaxRadius : DEFAULT_MAX_RADIUS;
+            // Clamp Zoom Limits
+            const min = cameraMode === "focus" ? focusMinRadius : DEFAULT_MIN_RADIUS;
+            const max = cameraMode === "focus" ? focusMaxRadius : DEFAULT_MAX_RADIUS;
 
-        targetRadius = THREE.MathUtils.clamp(targetRadius, min, max);
+            targetRadius = THREE.MathUtils.clamp(targetRadius, min, max);
+        }
 
         lastTouchDist = currentDist;
     }
-
 }, { passive: false });
 
 canvas.addEventListener("touchend", () => {

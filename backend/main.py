@@ -45,7 +45,8 @@ async def lifespan(app: FastAPI):
                 print("📦 Loaded from DB:", date_str)
             else:
                 try:
-                    result = compute_visibility(date_str)
+                    # Run CPU-intensive task in a separate thread
+                    result = await asyncio.to_thread(compute_visibility, date_str)
                     VISIBILITY_CACHE[date_str] = result
                     save_visibility(date_str, result)
                     print("✅ Computed & Saved:", date_str)
