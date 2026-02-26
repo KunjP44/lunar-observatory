@@ -50,6 +50,15 @@ body.lunar-active {
     overflow: hidden;
 }
 
+/* ===== Safe Area Fix for Android/iOS ===== */
+
+body {
+    padding-top: env(safe-area-inset-top);
+}
+
+.events-panel {
+    padding-top: calc(env(safe-area-inset-top) + 10px);
+}
 
 /* =====================================================
     LAYER & INTERACTION CONTROL
