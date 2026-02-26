@@ -2848,6 +2848,7 @@ input:checked+.slider:before {
     background: none;
     border: none;
     color: rgba(255, 255, 255, 0.7);
+    margin-top: 12px;
     margin-bottom: 12px;
     cursor: pointer;
     font-size: 13px;

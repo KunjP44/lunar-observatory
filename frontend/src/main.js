@@ -710,7 +710,7 @@ canvas.addEventListener("touchmove", (e) => {
         isDragging = true;
 
         // Sensitivity: 1 screen width = 360 degrees rotation (Natural feel)
-        const ROTATE_SPEED = 2.0;
+        const ROTATE_SPEED = 0.5;
         const sensitivity = (Math.PI * 2 * ROTATE_SPEED) / window.innerWidth;
 
         if (cameraMode === "lunar") {
@@ -1148,12 +1148,13 @@ function applySolarLighting() {
     lunarSpotlight.visible = false;
 }
 function applyLunarLighting() {
-    ambient.intensity = 0.18;
+    // FIX: Use the LUNAR_LIGHTING constants instead of hardcoded numbers
+    ambient.intensity = LUNAR_LIGHTING.ambient;
     hemi.intensity = 0.2;
 
-    sunLight.intensity = 0;
+    sunLight.intensity = LUNAR_LIGHTING.sun;
 
-    lunarSpotlight.intensity = 8;
+    lunarSpotlight.intensity = LUNAR_LIGHTING.lunar;
     lunarSpotlight.color.set(0xffffff);
     lunarSpotlight.visible = true;
 }
@@ -1439,13 +1440,14 @@ function animate() {
     }
 
     // ---------------- CAMERA SMOOTHING ----------------
-    const lerpFactor = isMobile
-        ? (isDragging ? 0.6 : 0.12)
-        : (isDragging ? 0.6 : 0.05);
+    const lerpFactor = 0.1;
+
     currentTargetPos.lerp(targetPos, lerpFactor);
     currentRadius = THREE.MathUtils.lerp(currentRadius, targetRadius, lerpFactor);
+
     theta = THREE.MathUtils.lerp(theta, targetTheta, lerpFactor);
     phi = THREE.MathUtils.lerp(phi, targetPhi, lerpFactor);
+
     if (cameraMode !== "lunar") phi = THREE.MathUtils.clamp(phi, 0.1, Math.PI - 0.1);
 
     camera.position.set(
