@@ -654,7 +654,7 @@ canvas.addEventListener("touchstart", (e) => {
         // Check if this tap is close in time to the last one
         if (now - lastTap < DOUBLE_TAP_DELAY && !isDragging && !isPinching) {
             e.preventDefault();
-            handleInputFocus(e.touches[0].clientX, e.touches[0].clientY);
+            handleDoubleTap(e.touches[0].clientX, e.touches[0].clientY);
             lastTap = 0;
         } else {
             lastTap = now;
@@ -662,6 +662,12 @@ canvas.addEventListener("touchstart", (e) => {
             isPinching = false;
             touchStart.x = e.touches[0].clientX;
             touchStart.y = e.touches[0].clientY;
+
+            setTimeout(() => {
+                if (!isDragging && !isPinching) {
+                    handleSingleTap(e.touches[0].clientX, e.touches[0].clientY);
+                }
+            }, 250);
         }
     }
     // 2 Fingers: Pinch Zoom
@@ -678,9 +684,10 @@ canvas.addEventListener("touchstart", (e) => {
 // FIND THIS BLOCK IN main.js AND REPLACE IT
 canvas.addEventListener("touchmove", (e) => {
     e.preventDefault();
+    if (isPinching) return;
 
     // 1. Rotation logic (Strictly 1 finger AND NOT PINCHING)
-    if (e.touches.length === 1 && !isPinching) {
+    if (e.touches.length === 1 && !isPinching && !isTimeTraveling) {
 
         const dx = e.touches[0].clientX - touchStart.x;
         const dy = e.touches[0].clientY - touchStart.y;
@@ -752,6 +759,44 @@ function handleInputFocus(clientX, clientY) {
         }
     } else {
         exitFocus();
+    }
+}
+
+function handleSingleTap(clientX, clientY) {
+
+    pointer.x = (clientX / window.innerWidth) * 2 - 1;
+    pointer.y = -(clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(pointer, camera);
+
+    const hits = raycaster.intersectObjects(Object.values(planetMeshes), true);
+
+    if (hits.length > 0) {
+        let obj = hits[0].object;
+        while (obj.parent && !obj.userData.id) obj = obj.parent;
+
+        if (obj.userData.id) {
+            loadInfoCard(obj.userData.id);
+            infoCard.classList.remove("hidden");
+        }
+    }
+}
+
+function handleDoubleTap(clientX, clientY) {
+    if (uiPage !== "solar") return;
+
+    pointer.x = (clientX / window.innerWidth) * 2 - 1;
+    pointer.y = -(clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(pointer, camera);
+
+    const hits = raycaster.intersectObjects(Object.values(planetMeshes), true);
+
+    if (hits.length > 0) {
+        let obj = hits[0].object;
+        while (obj.parent && !obj.userData.id) obj = obj.parent;
+
+        if (obj.userData.id) {
+            focusOn(obj);
+        }
     }
 }
 
@@ -1709,6 +1754,12 @@ const viewSettings = document.getElementById("view-settings");
 // 1. OPEN PANEL
 if (notifBtn && eventsPanel) {
     notifBtn?.addEventListener("click", () => {
+        hideNotificationDot();
+
+        // mark all as read
+        let stored = JSON.parse(localStorage.getItem("appNotifications") || "[]");
+        stored = stored.map(n => ({ ...n, read: true }));
+        localStorage.setItem("appNotifications", JSON.stringify(stored));
 
         const hasNotifications =
             document.querySelector("#notifications-container .notification-item");
@@ -2176,7 +2227,15 @@ dailyToggle?.addEventListener("change", async (e) => {
             e.target.checked = false;
             return;
         }
-
+        await fetch(`${API_BASE}/api/push/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                token: localStorage.getItem("fcm_token"),
+                daily_brief: e.target.checked,
+                planet_brief: localStorage.getItem("planetBrief") === "true"
+            })
+        });
         console.log("Daily Brief Enabled");
 
     } else {
@@ -2200,6 +2259,15 @@ planetToggle?.addEventListener("change", async (e) => {
             e.target.checked = false;
             return;
         }
+        await fetch(`${API_BASE}/api/push/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                token: localStorage.getItem("fcm_token"),
+                daily_brief: localStorage.getItem("dailyBrief") === "true",
+                planet_brief: e.target.checked
+            })
+        });
 
         console.log("Planet Brief Enabled");
 
@@ -2212,7 +2280,72 @@ planetToggle?.addEventListener("change", async (e) => {
 // Run once at startup
 syncNotificationUI();
 
+const notifDot = document.getElementById("notif-dot");
+const notificationsContainer = document.getElementById("notifications-container");
+
+function showNotificationDot() {
+    notifDot?.classList.remove("hidden");
+}
+
+function hideNotificationDot() {
+    notifDot?.classList.add("hidden");
+}
+
+function addNotificationToPanel(notification) {
+
+    if (!notificationsContainer) return;
+
+    const div = document.createElement("div");
+    div.className = "notification-item";
+
+    div.innerHTML = `
+        <div style="font-size:13px; font-weight:600;">${notification.title}</div>
+        <div style="font-size:12px; opacity:0.7; margin-top:4px;">
+            ${notification.body}
+        </div>
+        <div style="font-size:10px; opacity:0.4; margin-top:6px;">
+            ${new Date(notification.time).toLocaleString()}
+        </div>
+    `;
+
+    notificationsContainer.prepend(div);
+}
+
+function loadStoredNotifications() {
+    const stored = JSON.parse(localStorage.getItem("appNotifications") || "[]");
+
+    if (!stored.length) return;
+
+    stored.forEach(n => addNotificationToPanel(n));
+
+    const unreadExists = stored.some(n => !n.read);
+    if (unreadExists) showNotificationDot();
+}
+
+loadStoredNotifications();
+
 onMessage(messaging, (payload) => {
     console.log("Foreground message received:", payload);
-    // Do NOT manually show notification.
+
+    const title = payload.notification?.title || "Notification";
+    const body = payload.notification?.body || "";
+
+    const newNotification = {
+        id: Date.now(),
+        title,
+        body,
+        time: new Date().toISOString(),
+        read: false
+    };
+
+    // 1. Save to localStorage
+    let stored = JSON.parse(localStorage.getItem("appNotifications") || "[]");
+    stored.unshift(newNotification);
+    localStorage.setItem("appNotifications", JSON.stringify(stored));
+
+    // 2. Update UI
+    addNotificationToPanel(newNotification);
+
+    // 3. Show red dot
+    showNotificationDot();
 });
