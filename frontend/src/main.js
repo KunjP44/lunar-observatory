@@ -1,4 +1,4 @@
-const ASSET_BASE = "./frontend/public/";
+const ASSET_BASE = "./public/";
 const IS_LOCAL =
     location.hostname === "localhost" ||
     location.hostname === "127.0.0.1";
@@ -9,7 +9,7 @@ const API_BASE = IS_LOCAL
 
 import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
 import { loadInfoCard } from "./infoCard.js";
-import { fetchMoonData, fetchPlanetPositions } from "./api.js";
+import { fetchMoonData, fetchPlanetPositions, fetchVisibility, fetchEventsForYear } from "./api.js";
 import { initLearnMode } from "./learn.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-messaging.js";
@@ -1882,33 +1882,32 @@ document.getElementById("mark-all-read")?.addEventListener("click", () => {
 -------------------------- */
 
 async function loadPlanetVisibilityForDate(dateObj) {
+
     const iso = dateObj.toISOString().split("T")[0];
 
     try {
+
         planetList.innerHTML =
             '<div style="text-align:center; padding:20px; opacity:0.5; font-size:12px;">Calibrating sensors...</div>';
 
-        // FIX: Added slash after "visibility" to stop 307 Redirects
-        const res = await fetch(`${API_BASE}/api/visibility/?date=${iso}`);
-        const data = await res.json();
+        const data = await fetchVisibility(iso);
 
         renderPlanetVisibility(data);
+
     } catch (e) {
+
+        console.error("Visibility error:", e);
+
         planetList.innerHTML =
-            '<div style="text-align:center; opacity:0.5;">Signal lost. Check connection.</div>';
+            '<div style="text-align:center; opacity:0.5;">Signal lost.</div>';
     }
 }
 
 async function loadEventsForYear(year) {
 
-    // ✅ Prevent duplicate calls
-    if (cachedEvents.length && currentEventsYear === year) {
-        return;
-    }
-
     try {
-        const res = await fetch(`${API_BASE}/api/events/year/${year}`);
-        const events = await res.json();
+
+        const events = await fetchEventsForYear(year);
 
         cachedEvents = events;
         currentEventsYear = year;
@@ -1917,6 +1916,7 @@ async function loadEventsForYear(year) {
         renderYearSelector(year);
 
     } catch (err) {
+
         console.error("Events load error:", err);
     }
 }
@@ -2166,6 +2166,7 @@ document.getElementById("disable-notifications")?.addEventListener("click", () =
             loaderUI.style.opacity = "0";
             setTimeout(() => loaderUI.remove(), 800);
         }
+        await checkForNewYear();
     }
 })();
 
@@ -2579,4 +2580,51 @@ if (!isNativeApp && messaging) {
         addNotificationToPanel(newNotification);
         showNotificationDot();
     });
+}
+
+// ================= YEAR UPDATE CHECK =================
+
+async function checkForNewYear() {
+
+    try {
+
+        const res = await fetch(`${API_BASE}/api/meta/latest-year`);
+        const data = await res.json();
+
+        const latest = data.latest_year;
+
+        const storedYears = JSON.parse(
+            localStorage.getItem("availableYears") || "[2026]"
+        );
+
+        if (!storedYears.includes(latest)) {
+
+            console.log("New year detected:", latest);
+
+            const bundleRes = await fetch(
+                `${API_BASE}/bundles/year_${latest}.json`
+            );
+
+            const bundle = await bundleRes.json();
+
+            localStorage.setItem(
+                `year_${latest}`,
+                JSON.stringify(bundle)
+            );
+
+            storedYears.push(latest);
+            localStorage.setItem(
+                "availableYears",
+                JSON.stringify(storedYears)
+            );
+
+            console.log("New year downloaded silently.");
+
+        }
+
+    } catch (e) {
+
+        console.log("No internet or no new year available.");
+
+    }
 }
