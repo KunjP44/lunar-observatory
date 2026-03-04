@@ -1,15 +1,15 @@
 from datetime import date, timedelta, datetime
 from typing import List
 
-# from backend.moon.logic import get_moon_data
-# from backend.events.models import Event
 
-from moon.logic import get_moon_data
-from events.models import Event
+
+# from moon.logic import get_moon_data
+# from events.models import Event
 
 from skyfield.api import load
 import math
-
+from backend.moon.logic import get_moon_data
+from backend.events.models import Event
 
 # 🇮🇳 India Observer (Ahmedabad for now)
 INDIA_LAT = 23.0225
