@@ -89,7 +89,7 @@ api = FastAPI(lifespan=lifespan)
 # ================= STATIC YEAR BUNDLES =================
 api.mount(
     "/bundles",
-    StaticFiles(directory="static/bundles"),
+    StaticFiles(directory="backend/static/bundles"),
     name="bundles",
 )
 
