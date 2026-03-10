@@ -13,13 +13,13 @@ const APK_URL =
     "https://github.com/KunjP44/lunar-observatory/releases/latest/download/lunar-observatory.apk";
 
 const WINDOWS_URL =
-    "https://github.com/KunjP44/lunar-observatory/releases/latest/download/Lunar-Observatory-1.1.0-win.exe";
+    "https://github.com/KunjP44/lunar-observatory/releases/latest/download/Lunar-Observatory-win.exe";
 
 const LINUX_APPIMAGE =
-    "https://github.com/KunjP44/lunar-observatory/releases/latest/download/Lunar-Observatory-1.1.0-linux.AppImage";
+    "https://github.com/KunjP44/lunar-observatory/releases/latest/download/Lunar-Observatory-linux.AppImage";
 
 const LINUX_DEB =
-    "https://github.com/KunjP44/lunar-observatory/releases/latest/download/Lunar-Observatory-1.1.0-linux.deb";
+    "https://github.com/KunjP44/lunar-observatory/releases/latest/download/Lunar-Observatory-linux.deb";
 
 const PWA_URL =
     "https://kunjp44.github.io/lunar-observatory-app/";
